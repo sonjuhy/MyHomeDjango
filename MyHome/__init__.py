@@ -5,3 +5,4 @@ mqttAndroid.connection(topic='android')
 
 mqttSwitch = subscribe.Subscribe()
 mqttSwitch.connection(topic='switch')
+
