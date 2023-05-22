@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from . import jsonParser
 from . import publisher
-
+import os, sys
 
 class Subscribe:
 
@@ -24,6 +24,7 @@ class Subscribe:
         else:
             self.selected_topic = self.topic_switch
         
+        self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.connect_async(self.server_host, 1883)
@@ -35,6 +36,7 @@ class Subscribe:
 
 
     def on_message(self, client, user_data, msg):
+        print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
         if self.selected_topic == self.topic_android:
             payload = msg.payload.decode('utf-8')
             msgToSwitch = jsonParser.JSON_Parser_android(payload)
@@ -54,9 +56,13 @@ class Subscribe:
                             # network.SQL_Def("Connect", dbDiction)
                             self.Room[room] = 'Off'
             else:
-                # TODO: connection to DB
-                # network.SQL_Def("LightRecord", self.dict)
-                # network.SQL_Def("Light", self.dict)
+                sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+                import dbConnection as db
+
+                dbContainer = db.Connection()
+                dbContainer.main('LightRecordInsert', msgDiction)
+                dbContainer.main('LightUpdate', msgDiction)
+
                 msgToAndroid = jsonParser.JSON_ENCODE(msgDiction)
                 # publisher.pub('MyHome/Light/Result', msgToAndroid)
                 print('msgToAndroid : {}'.format(msgToAndroid))
