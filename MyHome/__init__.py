@@ -7,4 +7,4 @@ mqttAndroid.connection(topic='android')
 mqttSwitch = subscribe.Subscribe()
 mqttSwitch.connection(topic='switch')
 
-Kafka_Consumer_default().run('exam-topic')
+Kafka_Consumer_default().run('iot-topic')
