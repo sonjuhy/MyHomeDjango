@@ -64,7 +64,7 @@ class Subscribe:
                 dbContainer.main('LightUpdate', msgDiction)
 
                 msgToAndroid = jsonParser.JSON_ENCODE(msgDiction)
-                # publisher.pub('MyHome/Light/Result', msgToAndroid)
+                # publisher().pub('MyHome/Light/Result', msgToAndroid)
                 print('msgToAndroid : {}'.format(msgToAndroid))
 
 
