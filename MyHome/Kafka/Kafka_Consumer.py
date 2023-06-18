@@ -51,9 +51,9 @@ class KafkaConsumerDefault:
                 elif topic == 'cloud-topic':
                     json_object = fileJSON.json_parsing(value)
                     if json_object['purpose'] == 'move':
-                        result = fileMove.file_move(json_object['uuid'], json_object['file'], json_object['path'])
+                        result = fileMove.file_move(uuid=json_object['uuid'], file=json_object['file'], path=json_object['path'], action=json_object['action'])
                     elif json_object['purpose'] == 'delete':
-                        result = fileMove.file_delete(json_object['uuid'], json_object['file'])
+                        result = fileMove.file_delete(uuid=json_object['uuid'], file=json_object['file'])
                     else:
                         result = -1
 

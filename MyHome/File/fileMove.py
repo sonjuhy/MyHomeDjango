@@ -5,29 +5,31 @@ default_public_path = 'C:\\Users\\SonJunHyeok\\Desktop\\test\\'
 default_private_path = 'C:\\Users\\SonJunHyeok\\Desktop\\test\\private'
 
 
-def file_move(uuid, file, path):
+def file_move(uuid, file, path, action):
     name = file.split('\\')[-1]
 
-    files = os.listdir(path)
-    if os.path.isdir(file):
-        for f in files:
-            if os.path.isdir(f):
-                if f is name:
-                    return -1
-    else:
-        for f in files:
-            if not os.path.isdir(f):
-                if f is name:
-                    return -1
-    if 'trash' in path:
-        print('file_move path : {}'.format(path))
+    try:
+        files = os.listdir(path)
+        if os.path.isdir(file):
+            for f in files:
+                if os.path.isdir(f):
+                    if f is name:
+                        return -1
+        else:
+            for f in files:
+                if not os.path.isdir(f):
+                    if f is name:
+                        return -1
+        if action == 'delete':
+            print('file_move path : {}'.format(path))
+    except Exception as e:
+        print('file_move exist check error : {}'.format(e))
+        return -1
 
-    if 'private' not in path:
-        print('file_move uuid : {}'.format(uuid))
     try:
         import MyHome.File.fileDBConnection as fileDB
         db_conn = fileDB.DBConnection()
-        if 'trash' in path:  # move to trash folder
+        if action == 'delete':  # move to trash folder
             if 'private' not in path:  # public folder
                 data = {'uuid': uuid, 'type': 'public', 'action': 'remove'}
                 # fileDB.DBConnection.main_query('deletePublic', data)
@@ -36,13 +38,15 @@ def file_move(uuid, file, path):
             else:
                 data = {'uuid': uuid, 'type': 'private', 'action': 'remove'}
                 db_conn.main_query('deletePrivate', data)
-        elif 'trash' in file:  # restore file from trash folder
+        elif action == 'restore':  # restore file from trash folder
             if 'private' not in path:
                 data = {'uuid': uuid, 'type': 'public', 'action': 'restore'}
                 db_conn.main_query('restorePublic', data)
+                path = path.replace('trash', 'public')
             else:
                 data = {'uuid': uuid, 'type': 'private', 'action': 'restore'}
                 db_conn.main_query('restorePrivate', data)
+                path = path.replace('trash', '')
         else:  # move to path
             data = {'uuid': uuid, 'path': file, 'destination': path}
             if 'private' not in path:

@@ -53,25 +53,11 @@ class FilePrivate(models.Model):
     OWNER_CHAR = models.CharField(max_length=45)
     LOCATION_CHAR = models.CharField(max_length=200)
     STATE_INT = models.IntegerField()
+    DELETE_STATUS_INT = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'FILE_PRIVATE_TB'
-
-
-class FilePrivateTrash(models.Model):
-    UUID_PK = models.CharField(primary_key=True, db_index=False, verbose_name='UUID_PK', max_length=200)
-    PATH_CHAR = models.CharField(max_length=200)
-    NAME_CHAR = models.CharField(max_length=100)
-    TYPE_CHAR = models.CharField(max_length=45)
-    SIZE_FLOAT = models.FloatField()
-    OWNER_CHAR = models.CharField(max_length=45)
-    LOCATION_CHAR = models.CharField(max_length=200)
-    STATE_INT = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'FILE_PRIVATE_TRASH_TB'
 
 
 class FilePublic(models.Model):
@@ -82,21 +68,8 @@ class FilePublic(models.Model):
     SIZE_FLOAT = models.FloatField()
     LOCATION_CHAR = models.CharField(max_length=200)
     STATE_INT = models.IntegerField()
+    DELETE_STATUS_INT = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'FILE_PUBLIC_TB'
-
-
-class FilePublicTrash(models.Model):
-    UUID_PK = models.CharField(primary_key=True, db_index=False, verbose_name='UUID_PK', max_length=200)
-    PATH_CHAR = models.CharField(max_length=200)
-    NAME_CHAR = models.CharField(max_length=100)
-    TYPE_CHAR = models.CharField(max_length=45)
-    SIZE_FLOAT = models.FloatField()
-    LOCATION_CHAR = models.CharField(max_length=200)
-    STATE_INT = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'FILE_PUBLIC_TRASH_TB'

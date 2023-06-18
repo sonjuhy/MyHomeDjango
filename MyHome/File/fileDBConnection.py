@@ -1,4 +1,4 @@
-from MyHome.models import FilePrivate, FilePrivateTrash, FilePublicTrash, FilePublic
+from MyHome.models import FilePrivate, FilePublic
 
 
 class DBConnection:
@@ -9,27 +9,21 @@ class DBConnection:
         if mode == 'movePublic':
             self.schema = FilePublic
             self.update_query(data)  # uuid, type(public, private), action(move, remove, restore), path, destination
-        elif mode == 'restorePublic':
-            self.schema = FilePublicTrash
-            self.restore_remove_query(data)  # uuid, type(public, private), action(move, remove, restore)
-        elif mode == 'deletePublic':
+        elif mode == 'restorePublic' or mode == 'deletePublic':
             print('main_query deletePublic data : {}'.format(data))
             self.schema = FilePublic
             self.restore_remove_query(data)
-        elif mode == 'movePrivate':
+        elif mode == 'movePrivate' or mode == 'restorePrivate':
             self.schema = FilePrivate
-            self.update_query(data)
-        elif mode == 'restorePrivate':
-            self.schema = FilePrivateTrash
             self.restore_remove_query(data)
         elif mode == 'deletePrivate':
             self.schema = FilePrivate
             self.restore_remove_query(data)
         elif mode == 'delete':  # uuid, type(public,private)
             if data['type'] == 'private':
-                self.schema = FilePrivateTrash
+                self.schema = FilePrivate
             else:
-                self.schema = FilePublicTrash
+                self.schema = FilePublic
             self.delete_query(data['uuid'])
 
     def update_query(self, data):  # uuid, path, destination
@@ -63,55 +57,44 @@ class DBConnection:
             dir_len = len(dir_columns)
             while dir_len > 0:
                 # remove folder db info
-                if data['type'] == 'public':
-                    if data['action'] == 'remove':
-                        destination_schema = FilePublicTrash
-                    elif data['action'] == 'restore':
-                        destination_schema = FilePublic
-                else:
-                    if data['action'] == 'remove':
-                        destination_schema = FilePrivateTrash
-                    elif data['action'] == 'restore':
-                        destination_schema = FilePrivate
-                self.move_query(dir_columns[0].UUID_PK, data['type'], destination_schema)
+                self.move_query(dir_columns[0].UUID_PK, data['type'], data['action'])
 
                 for idx in range(0, dir_len):
                     path_char = dir_columns.pop(0).PATH_CHAR
-                    columns = self.schema.objects.filter(LOCATION_CHAR=path_char+'\\')
+                    columns = self.schema.objects.filter(LOCATION_CHAR=path_char + '\\')
                     for col in columns:
                         if col.TYPE_CHAR == 'dir':
                             dir_columns.append(col)
-                        self.move_query(col.UUID_PK, data['type'], destination_schema)
+                        self.move_query(col.UUID_PK, data['type'], data['action'])
                 dir_len = len(dir_columns)
         else:
-            if data['type'] == 'public':
-                if data['action'] == 'remove':
-                    self.move_query(column.UUID_PK, data['type'], FilePublicTrash)
-                elif data['action'] == 'restore':
-                    self.move_query(column.UUID_PK, data['type'], FilePublic)
-            else:
-                if data['action'] == 'remove':
-                    self.move_query(column.UUID_PK, data['type'], FilePrivateTrash)
-                elif data['action'] == 'restore':
-                    self.move_query(column.UUID_PK, data['type'], FilePrivate)
+            self.move_query(column.UUID_PK, data['type'], data['action'])
 
-    def move_query(self, uuid, mode_type, destination_schema):
+    def move_query(self, uuid, mode_type, action):
         origin_column = self.schema.objects.get(UUID_PK=uuid)
-        destination_column = destination_schema()
-        if mode_type == 'private':
-            destination_column.OWNER_CHAR = origin_column.OWNER_CHAR
-        destination_column.UUID_PK = origin_column.UUID_PK
-        destination_column.PATH_CHAR = origin_column.PATH_CHAR
-        destination_column.NAME_CHAR = origin_column.NAME_CHAR
-        destination_column.TYPE_CHAR = origin_column.TYPE_CHAR
-        destination_column.SIZE_FLOAT = origin_column.SIZE_FLOAT
-        destination_column.LOCATION_CHAR = origin_column.LOCATION_CHAR
-        destination_column.STATE_INT = origin_column.STATE_INT
-        destination_column.save()
-        delete_result = origin_column.delete()
-        print('move_query delete result : {}'.format(delete_result))
+        if action == 'remove':
+            origin_column.DELETE_STATUS_INT = 1
+            if mode_type == 'private':
+                tmp_location = origin_column.LOCATION_CHAR
+                tmp_location = tmp_location[0:tmp_location.find('User_') + 7] + '_trash' + tmp_location[tmp_location.find('User_') + 7:]
+                origin_column.LOCATION_CHAR = tmp_location
+                tmp_path = origin_column.PATH_CHAR
+                tmp_path = tmp_path[0:tmp_path.find('User_') + 7] + '_trash' + tmp_path[tmp_path.find('User_') + 7:]
+                origin_column.PATH_CHAR = tmp_path
+            else:
+                origin_column.LOCATION_CHAR = origin_column.LOCATION_CHAR.replace('public', 'trash')
+                origin_column.PATH_CHAR = origin_column.PATH_CHAR.replace('public', 'trash')
+        else:  # restore
+            origin_column.DELETE_STATUS_INT = 0
+            if mode_type == 'private':
+                origin_column.LOCATION_CHAR = origin_column.LOCATION_CHAR.replace('_trash', '')
+                origin_column.PATH_CHAR = origin_column.PATH_CHAR.replace('_trash', '')
+            else:
+                origin_column.LOCATION_CHAR = origin_column.LOCATION_CHAR.replace('trash', 'public')
+                origin_column.PATH_CHAR = origin_column.PATH_CHAR.replace('trash', 'public')
+        origin_column.save()
 
     def delete_query(self, uuid):
         column = self.schema.objects.get(UUID_PK=uuid)
-        column.delete()
-
+        delete_result = column.delete()
+        print('delete_query result : {}'.format(delete_result))
