@@ -27,27 +27,43 @@ class DBConnection:
             self.delete_query(data['uuid'])
 
     def update_query(self, data):  # uuid, path, destination
+        paths = data['path'].split('\\')
+        standard_path = ''
+        for idx in range(0, len(paths)-1):
+            standard_path += paths[idx]+'\\'
+        print('update_query standard : {}'.format(standard_path))
         column = self.schema.objects.get(UUID_PK=data['uuid'])
+
         if column.TYPE_CHAR == 'dir':
             dir_columns = [column]
             dir_len = len(dir_columns)
 
-            for idx in range(0, dir_len):
-                location_char = dir_columns.pop(0).LOCATION_CHAR
-                columns = self.schema.objects.filter(LOCATION_CHAR=location_char)
-                for col in columns:
-                    if column.TYPE_CHAR == 'dir':
-                        dir_columns.append(col)
-                    path = col.PATH_CHAR
-                    path.replace(data['path'], data['destination'])
-                    col.PATH_CHAR = path
-                    col.LOCATION_CHAR = data['destination']
-                column.save()
+            while dir_len > 0:
+                for idx in range(0, dir_len):
+                    location_char = dir_columns[0].PATH_CHAR + '\\'
+                    columns = self.schema.objects.filter(LOCATION_CHAR=location_char)
+
+                    origin_col = dir_columns.pop(0)
+                    path = origin_col.PATH_CHAR.replace(standard_path, data['destination'])
+                    location = origin_col.LOCATION_CHAR.replace(standard_path, data['destination'])
+                    origin_col.PATH_CHAR = path
+                    origin_col.LOCATION_CHAR = location
+                    origin_col.save()
+
+                    for col in columns:
+                        if col.TYPE_CHAR == 'dir':
+                            dir_columns.append(col)
+                        col.PATH_CHAR = col.PATH_CHAR.replace(standard_path, data['destination'])
+                        col.LOCATION_CHAR = col.LOCATION_CHAR.replace(standard_path, data['destination'])
+                        col.save()
+                dir_len = len(dir_columns)
+                print('update_query dir len : {}'.format(dir_len))
         else:
             path = column.PATH_CHAR
-            path.replace(data['path'], data['destination'])
-            column.PATH_CHAR = path
-            column.LOCATION_CHAR = data['destination']
+            print('update_query path in file : {}'.format(path))
+            column.PATH_CHAR = path.replace(standard_path, data['destination'])
+            location = column.LOCATION_CHAR
+            column.LOCATION_CHAR = location.replace(standard_path, data['destination'])
             column.save()
 
     def restore_remove_query(self, data):
