@@ -18,7 +18,7 @@ class RoomLight(models.Model):
 class Reserve(models.Model):
     LIGHT_RESERVE_PK = models.IntegerField(primary_key=True)
     NAME_CHAR = models.CharField(max_length=32)
-    NAMEKOR_CHAR = models.CharField(max_length=32)
+    ROOMKOR_CHAR = models.CharField(max_length=32)
     TIME_CHAR = models.CharField(max_length=32)
     ROOM_CHAR = models.CharField(max_length=32)
     DO_CHAR = models.CharField(max_length=16)
@@ -32,7 +32,7 @@ class Reserve(models.Model):
 
 
 class LightRecord(models.Model):
-    LIGHT_RECORD_ID = models.AutoField(primary_key=True, db_index=True, verbose_name='LIGHT_RECORD_PK')
+    LIGHT_RECORD_PK = models.AutoField(primary_key=True, db_index=True, verbose_name='LIGHT_RECORD_PK')
     DAY_CHAR = models.CharField(max_length=32)
     TIME_CHAR = models.CharField(max_length=32)
     ROOM_CHAR = models.CharField(max_length=64)

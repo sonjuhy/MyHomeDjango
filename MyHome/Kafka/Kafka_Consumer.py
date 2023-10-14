@@ -1,7 +1,9 @@
 import json
 import threading
 import traceback
+import schedule
 
+from MyHome.Kafka.lightReserve import job
 from MyHome.MQTT import jsonParser
 from MyHome.MQTT import publisher
 from MyHome.File import fileJSON
@@ -67,6 +69,9 @@ class KafkaConsumerDefault:
                         result_msg = 'success'
                     # tmp_json = {'message': 'no', 'result': result_msg}
                     # kafka_cloud_producer(fileJSON.json_encoding(result_msg))
+                elif topic == 'reserve-topic':
+                    print('reserve topic refresh job schedule')
+                    job.job_refresh(schedule)
 
 
 def kafka_cloud_producer(msg):

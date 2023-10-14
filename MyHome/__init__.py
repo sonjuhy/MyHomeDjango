@@ -13,3 +13,6 @@ iot_kafka.run('iot-topic')
 
 cloud_kafka = KafkaConsumerDefault()
 cloud_kafka.run('cloud-topic')
+
+reserve_kafka = KafkaConsumerDefault()
+reserve_kafka.run('reserve-topic')
