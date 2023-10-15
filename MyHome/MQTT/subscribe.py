@@ -35,7 +35,7 @@ class Subscribe:
         self.client.subscribe(self.selected_topic)
 
     def on_message(self, client, user_data, msg):
-        print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
+        # print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
         if self.selected_topic == self.topic_android:
             payload = msg.payload.decode('utf-8')
             msg_to_switch = jsonParser.JSON_Parser_android(payload)

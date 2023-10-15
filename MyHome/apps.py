@@ -10,3 +10,5 @@ class MyhomeConfig(AppConfig):
         if settings.SCHEDULER_DEFAULT:
             from MyHome.Schedule import operator
             operator.start()
+        from MyHome.Kafka.lightReserve import job
+        job.job_refresh()

@@ -15,7 +15,7 @@ def start():
     @scheduler.scheduled_job('cron', hour=0, name='cloud_reserve_check')
     # @scheduler.scheduled_job('interval', seconds=50, name = 'expiry_check')
     def auto_check():
-        job.job_refresh(schedule)
+        job.job_refresh()
         kafka_cloud_producer()
 
     scheduler.start()
