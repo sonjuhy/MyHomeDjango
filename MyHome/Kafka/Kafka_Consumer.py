@@ -2,13 +2,13 @@ import json
 import threading
 import traceback
 
+from kafka import KafkaConsumer
+
+from MyHome.File import fileJSON
+from MyHome.File import fileMove
 from MyHome.Kafka.lightReserve import job
 from MyHome.MQTT import jsonParser
 from MyHome.MQTT import publisher
-from MyHome.File import fileJSON
-from MyHome.File import fileMove
-
-from kafka import KafkaConsumer
 
 
 class KafkaConsumerDefault:
