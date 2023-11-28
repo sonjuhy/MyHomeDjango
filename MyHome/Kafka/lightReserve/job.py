@@ -6,67 +6,75 @@ from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
 
 from MyHome.MQTT.publisher import pub
+from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
 
 
 def job_refresh():
     print('job refresh')
-    scheduler = BackgroundScheduler()
-    scheduler.configure(timezone=timezone('Asia/Seoul'))
+    try:
+        scheduler = BackgroundScheduler()
+        scheduler.configure(timezone=timezone('Asia/Seoul'))
 
-    from .lightDB import get_all_light_list, get_all_reserve_list
-    reserve_list = get_all_reserve_list()  # get all reserve data
-    light_list = get_all_light_list()  # get all light data
+        from .lightDB import get_all_light_list, get_all_reserve_list
+        reserve_list = get_all_reserve_list()  # get all reserve data
+        light_list = get_all_light_list()  # get all light data
 
-    for reserve in reserve_list:
-        print('reserve name : ' + reserve.NAME_CHAR)
-        reserve_room = reserve.ROOM_CHAR  # room name
-        reserve_days = reserve.DAY_CHAR.split(',')  # split days
-        reserve_time = reserve.TIME_CHAR  # time. type : 12:01
-        reiteration = reserve.REITERATION_CHAR  # repeat every week. type : True or False
-        activation = reserve.ACTIVATED_CHAR
+        for reserve in reserve_list:
+            print('reserve name : ' + reserve.NAME_CHAR)
+            reserve_room = reserve.ROOM_CHAR  # room name
+            reserve_days = reserve.DAY_CHAR.split(',')  # split days
+            reserve_time = reserve.TIME_CHAR  # time. type : 12:01
+            reiteration = reserve.REITERATION_CHAR  # repeat every week. type : True or False
+            activation = reserve.ACTIVATED_CHAR
 
-        if reiteration == 'False':
-            if activation == 'True':  # one time run & already activated
-                continue
-            elif activation == 'False':
-                now_hour = time.localtime().tm_hour
-                now_min = time.localtime().tm_min
-                str_time = str(now_hour)+str(now_min)
-                now_time = datetime.strptime(str_time, '%H%M')
-                res_time = datetime.strptime(reserve_time, '%H:%M')
-                if now_time > res_time:
+            if reiteration == 'False':
+                if activation == 'True':  # one time run & already activated
                     continue
-        if reiteration == 'True':
-            today = time.localtime().tm_wday
-            running_today = True
-            for day in reserve_days:
-                if today == day:
-                    running_today = False
+                elif activation == 'False':
+                    now_hour = time.localtime().tm_hour
+                    now_min = time.localtime().tm_min
+                    str_time = str(now_hour)+str(now_min)
+                    now_time = datetime.strptime(str_time, '%H%M')
+                    res_time = datetime.strptime(reserve_time, '%H:%M')
+                    if now_time > res_time:
+                        continue
+            if reiteration == 'True':
+                today = time.localtime().tm_wday
+                running_today = True
+                for day in reserve_days:
+                    if today == day:
+                        running_today = False
+                        break
+                if running_today:
+                    continue
+
+            category = ''
+            for light in light_list:
+                if light.LIGHT_ROOM_PK == reserve_room:
+                    category = light.CATEGORY_CHAR
                     break
-            if running_today:
-                continue
+            msg = set_msg(reserve.DO_CHAR, reserve_room, category)
 
-        category = ''
-        for light in light_list:
-            if light.LIGHT_ROOM_PK == reserve_room:
-                category = light.CATEGORY_CHAR
-                break
-        msg = set_msg(reserve.DO_CHAR, reserve_room, category)
-
-        reserve_hour = reserve_time.split(':')[0]
-        reserve_min = reserve_time.split(':')[1]
-        scheduler.add_job(
-            func=job_running,
-            args=(msg, reserve),
-            trigger=CronTrigger(hour=reserve_hour, minute=reserve_min),
-            name=reserve.NAME_CHAR
-        )
-    scheduler.start()
+            reserve_hour = reserve_time.split(':')[0]
+            reserve_min = reserve_time.split(':')[1]
+            scheduler.add_job(
+                func=job_running,
+                args=(msg, reserve),
+                trigger=CronTrigger(hour=reserve_hour, minute=reserve_min),
+                name=reserve.NAME_CHAR
+            )
+        scheduler.start()
+    except Exception as e:
+        kafka_msg = '[job_refresh] msg : {}'.format(e) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
 
 
 def job_running(msg, reserve):
     topic = 'MyHome/Light/Pub/Server'
-    pub(topic, msg)
+    # pub(topic, msg)
+    kafka_msg = '[job_running] topic : '+topic+', msg : '+msg+', time : '+time.strftime('%Y-%m-%d %H:%M:%S')
+    producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
+
     reserve_pk = reserve.LIGHT_RESERVE_PK
     activation = 'False'
     if reserve.ACTIVATED_CHAR == 'False':
