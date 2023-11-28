@@ -23,22 +23,16 @@ class Subscribe:
         self.client = mqtt.Client()
 
     def connection(self, topic):
-        try:
-            if topic == 'android':
-                self.selected_topic = self.topic_android
-            else:
-                self.selected_topic = self.topic_switch
+        if topic == 'android':
+            self.selected_topic = self.topic_android
+        else:
+            self.selected_topic = self.topic_switch
 
-            self.client = mqtt.Client()
-            self.client.on_connect = self.on_connect
-            self.client.on_message = self.on_message
-            self.client.connect_async(self.server_host, 1883)
-            self.client.loop_start()
-            kafka_msg = '[connection] mqtt server connected topic : {topic}, time : {time}'.format(topic=topic, time=time.strftime('%Y-%m-%d %H:%M:%S'))
-            producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
-        except Exception as e:
-            kafka_msg = '[connection] msg : {error}, time : {time}'.format(error=e, time=time.strftime('%Y-%m-%d %H:%M:%S'))
-            producer.send(topic=kafka_topic['iot'], value=get_kafka_data(False, 'iot', kafka_msg))
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.connect_async(self.server_host, 1883)
+        self.client.loop_start()
 
     def on_connect(self, client, user_data, flags, rc):
         self.client.subscribe(self.selected_topic)
