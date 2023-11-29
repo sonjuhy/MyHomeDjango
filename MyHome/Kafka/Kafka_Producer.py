@@ -1,5 +1,4 @@
 from json import dumps
-import traceback
 from kafka import KafkaProducer
 
 
@@ -29,7 +28,6 @@ def get_kafka_data(result, service, content):
     kafka_data['type'] = result
     kafka_data['service'] = service
     kafka_data['content'] = content
-    producer.send(topic=kafka_topic[service], value=kafka_data)
     return kafka_data
 
 # try:

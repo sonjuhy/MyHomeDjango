@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = 'django-insecure-69z-m&p4ivr34b4x#0*l+#=*0jq$p^23=416tsy9xjlh7oz3&s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -47,21 +48,21 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'MyHomeDjango.urls'
 
-TEMPLATES = [
-    {
-        # 'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [],
-        # 'APP_DIRS': True,
-        # 'OPTIONS': {
-        #     'context_processors': [
-        #         'django.template.context_processors.debug',
-        #         'django.template.context_processors.request',
-        #         'django.contrib.auth.context_processors.auth',
-        #         'django.contrib.messages.context_processors.messages',
-        #     ],
-        # },
-    },
-]
+# TEMPLATES = [
+#     {
+#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+#         'DIRS': [],
+#         'APP_DIRS': True,
+#         'OPTIONS': {
+#             'context_processors': [
+#                 'django.template.context_processors.debug',
+#                 'django.template.context_processors.request',
+#                 'django.contrib.auth.context_processors.auth',
+#                 'django.contrib.messages.context_processors.messages',
+#             ],
+#         },
+#     },
+# ]
 
 WSGI_APPLICATION = 'MyHomeDjango.wsgi.application'
 
@@ -118,7 +119,7 @@ STATIC_URL = '/static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #Scheduler settings
 
