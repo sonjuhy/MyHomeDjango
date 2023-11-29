@@ -19,6 +19,7 @@ def job_refresh():
         reserve_list = get_all_reserve_list()  # get all reserve data
         light_list = get_all_light_list()  # get all light data
 
+        reserve_str = ''
         for reserve in reserve_list:
             print('reserve name : ' + reserve.NAME_CHAR)
             reserve_room = reserve.ROOM_CHAR  # room name
@@ -63,7 +64,10 @@ def job_refresh():
                 trigger=CronTrigger(hour=reserve_hour, minute=reserve_min),
                 name=reserve.NAME_CHAR
             )
+            reserve_str += reserve.NAME_CHAR+' : '+msg+', time : '+reserve_hour+'-'+reserve_min+'\n'
         scheduler.start()
+        kafka_msg = '[job_refresh] reserve size : {size}, data : {data}'.format(size=len(reserve_list), data=reserve_str)
+        producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
     except Exception as e:
         kafka_msg = '[job_refresh] msg : {}'.format(e) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))

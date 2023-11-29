@@ -45,7 +45,7 @@ class Subscribe:
                 msg_to_switch = jsonParser.JSON_Parser_android(payload)
                 # publisher.pub('MyHome/Light/Pub'+msgToSwitch['room'], msgToSwitch)
                 print('msgToSwitch : {}'.format(msg_to_switch))
-                kafka_msg = '[connection] mqtt server connected topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
+                kafka_msg = '[on_message] selected == android topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                 producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
             else:
                 payload = msg.payload.decode('utf-8')
@@ -70,9 +70,9 @@ class Subscribe:
                     msg_to_android = jsonParser.JSON_ENCODE(msg_diction)
                     # publisher().pub('MyHome/Light/Result', msgToAndroid)
                     print('msgToAndroid : {}'.format(msg_to_android))
-                    kafka_msg = '[connection] mqtt server connected topic : {topic}, msg : {msg}, time : {time}'.format(
+                    kafka_msg = '[on_message] selected != android & sender != server topic : {topic}, msg : {msg}, time : {time}'.format(
                         topic=self.selected_topic, msg=msg_to_android, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
         except Exception as e:
-            kafka_msg = '[on_message] msg : {}'.format(e)
+            kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=e, msg=msg)
             producer.send(topic=kafka_topic['iot'], value=get_kafka_data(False, 'iot', kafka_msg))
