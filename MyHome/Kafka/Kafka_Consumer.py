@@ -70,7 +70,9 @@ class KafkaConsumerDefault:
                     # kafka_cloud_producer(fileJSON.json_encoding(result_msg))
                 elif topic == 'reserve-topic':
                     print('reserve topic refresh job schedule')
-                    job.job_refresh()
+                    from apscheduler.schedulers.background import BackgroundScheduler
+                    scheduler = BackgroundScheduler()
+                    job.job_refresh(scheduler)
 
 
 def kafka_cloud_producer(msg):
