@@ -40,7 +40,7 @@ class Subscribe:
         self.client.subscribe(self.selected_topic)
 
     def on_message(self, client, user_data, msg):
-        # print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
+        print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
         try:
             if self.selected_topic == self.topic_android:
                 payload = msg.payload.decode('utf-8')
@@ -58,7 +58,7 @@ class Subscribe:
                         self.Room[msg_diction['room']] = 'On'
                         if msg_diction['room'] == 'small Room':
                             for (room, status) in self.Room.items():
-                                db_diction = ['message', status, 'room', room]
+                                db_diction = {'message': status, 'room': room}
                                 # TODO: connection to DB
                                 import MyHome.dbConnection as dbConn
                                 db_connection = dbConn.Connection()
