@@ -58,7 +58,7 @@ class Subscribe:
                         self.Room[msg_diction['room']] = 'On'
                         if msg_diction['room'] == 'small Room':
                             for (room, status) in self.Room.items():
-                                db_diction = [('message', status), ('room', room)]
+                                db_diction = ['message', status, 'room', room]
                                 # TODO: connection to DB
                                 import MyHome.dbConnection as dbConn
                                 db_connection = dbConn.Connection()
