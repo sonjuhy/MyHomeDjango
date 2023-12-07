@@ -1,3 +1,5 @@
+import traceback
+
 import paho.mqtt.client as mqtt
 from . import jsonParser
 from . import publisher
@@ -76,5 +78,5 @@ class Subscribe:
                         topic=self.selected_topic, msg=msg_to_android, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
         except Exception as e:
-            kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=e, msg=msg.payload.decode('utf-8'))
+            kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=traceback.format_exc(), msg=msg.payload.decode('utf-8'))
             producer.send(topic=kafka_topic['iot'], value=get_kafka_data(False, 'iot', kafka_msg))
