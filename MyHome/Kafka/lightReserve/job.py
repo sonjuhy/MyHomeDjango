@@ -32,6 +32,7 @@ def job_refresh(scheduler):
                     args=(reserve_job['msg'], reserve_job['reserve']),
                     trigger=CronTrigger(hour=reserve_job['hour'], minute=reserve_job['minute']),
                     name=reserve_job['name'],
+                    jobstore='iot_reserve_job_store',
                     replace_existing=True
                 )
                 reserve_str += reserve_job['name'] + ' : ' + reserve_job['msg'] + ', time : ' + reserve_job[
@@ -41,15 +42,17 @@ def job_refresh(scheduler):
         kafka_msg = '[job_refresh] reserve size : {size}, data : {data}'.format(size=len(reserve_job_list),
                                                                                 data=reserve_str)
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
+        # print(kafka_msg)
     except Exception as e:
         kafka_msg = '[job_refresh] error msg : {}'.format(e) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
+        # print(kafka_msg)
 
 
 def job_running(msg, reserve):
     try:
         topic = 'MyHome/Light/Pub/Server'
-        # pub(topic, msg)
+        pub(topic, msg)
         kafka_msg = '[job_running] send pub topic : ' + topic + ', msg : ' + msg + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))

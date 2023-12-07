@@ -19,7 +19,7 @@ class KafkaConsumerDefault:
         task.start()
 
     def listen(self, topic):
-        print('Starting listening')
+        print('Starting listening {}'.format(topic))
         consumer = KafkaConsumer(
             topic,
             bootstrap_servers=['192.168.0.254:9092'],
@@ -52,7 +52,8 @@ class KafkaConsumerDefault:
                 elif topic == 'cloud-topic':
                     json_object = fileJSON.json_parsing(value)
                     if json_object['purpose'] == 'move':
-                        result = fileMove.file_move(uuid=json_object['uuid'], file=json_object['file'], path=json_object['path'], action=json_object['action'])
+                        result = fileMove.file_move(uuid=json_object['uuid'], file=json_object['file'],
+                                                    path=json_object['path'], action=json_object['action'])
                     elif json_object['purpose'] == 'delete':
                         result = fileMove.file_delete(uuid=json_object['uuid'], file=json_object['file'])
                     else:
@@ -70,8 +71,11 @@ class KafkaConsumerDefault:
                     # kafka_cloud_producer(fileJSON.json_encoding(result_msg))
                 elif topic == 'reserve-topic':
                     print('reserve topic refresh job schedule')
-                    from apscheduler.schedulers.background import BackgroundScheduler
-                    scheduler = BackgroundScheduler()
+                    # from apscheduler.schedulers.background import BackgroundScheduler
+                    # scheduler = BackgroundScheduler()
+                    from MyHome.Schedule.MainScheduler import MainScheduler
+                    main_scheduler = MainScheduler()
+                    scheduler = main_scheduler.get_scheduler()
                     job.job_refresh(scheduler)
 
 
@@ -93,4 +97,3 @@ def kafka_cloud_producer(msg):
         print(response)
     except:
         traceback.print_exc()
-

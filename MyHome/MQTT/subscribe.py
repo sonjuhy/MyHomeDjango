@@ -56,14 +56,16 @@ class Subscribe:
                         self.Room[msg_diction['room']] = 'On'
                         if msg_diction['room'] == 'small Room':
                             for (room, status) in self.Room.items():
-                                dbDiction = [('message', status), ('room', room)]
+                                db_diction = [('message', status), ('room', room)]
                                 # TODO: connection to DB
-                                # network.SQL_Def("Connect", dbDiction)
+                                import MyHome.dbConnection as dbConn
+                                db_connection = dbConn.Connection()
+                                db_connection.main('LightUpdate', db_diction)
                                 self.Room[room] = 'Off'
                 else:
                     sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-                    import MyHome.dbConnection as db
-                    db_container = db.Connection()
+                    import MyHome.dbConnection as dbConn
+                    db_container = dbConn.Connection()
                     db_container.main('LightRecordInsert', msg_diction)
                     db_container.main('LightUpdate', msg_diction)
 
