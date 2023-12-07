@@ -16,7 +16,7 @@ class Connection:
             hour = str(now.hour) + ':' + str(now.minute)
             self.insert(hour, data['room'], data['message'], date, data['sender'])
         elif mode == 'ConnectUpdate':
-            self.update('control', data[0][1], 'Connect', data[1][1])  # need to compare data content
+            self.update('control', data['room'], 'Connect', data)  # need to compare data content
         elif mode == 'ReserveList':
             return self.select('Reserve')
         elif mode == 'ReserveUpdate':
@@ -33,7 +33,8 @@ class Connection:
             if column == 'State':
                 room.STATE_CHAR = data
             elif column == 'Connect':
-                room.CONNECT_CHAR = data
+                room.STATE_CHAR = data['message']
+                room.CONNECT_CHAR = data['status']
             room.save()
         elif mode == 'reserve':
             reserve = Reserve.objects.get(LIGHT_RESERVE_PK=condition)
