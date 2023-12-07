@@ -1,4 +1,5 @@
 import time
+import traceback
 from datetime import datetime
 
 from apscheduler.triggers.cron import CronTrigger
@@ -44,7 +45,7 @@ def job_refresh(scheduler):
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
         # print(kafka_msg)
     except Exception as e:
-        kafka_msg = '[job_refresh] error msg : {}'.format(e) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        kafka_msg = '[job_refresh] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         # print(kafka_msg)
 
@@ -65,7 +66,7 @@ def job_running(msg, reserve):
         from .lightDB import set_reserve_result
         set_reserve_result(pk=reserve_pk, activation=activation)
     except Exception as e:
-        kafka_msg = '[job_running] error msg : {}'.format(e) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        kafka_msg = '[job_running] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
 
 
