@@ -18,7 +18,6 @@ day_to_num = {
 
 
 def job_refresh(scheduler):
-    print('job refresh')
     try:
         if len(scheduler.get_jobs()) > 0:
             job_clear(scheduler)
@@ -28,6 +27,7 @@ def job_refresh(scheduler):
         if len(reserve_job_list) != 0:
             for reserve_job in reserve_job_list:
                 scheduler.add_job(
+                    id=reserve_job['id'],
                     func=job_running,
                     args=(reserve_job['msg'], reserve_job['reserve']),
                     trigger=CronTrigger(hour=reserve_job['hour'], minute=reserve_job['minute']),
@@ -36,8 +36,6 @@ def job_refresh(scheduler):
                 )
                 reserve_str += reserve_job['name'] + ' : ' + reserve_job['msg'] + ', time : ' + reserve_job[
                     'hour'] + '-' + reserve_job['minute'] + '\n'
-                print(reserve_str)
-            scheduler.start()
         else:
             reserve_str = 'no data'
         kafka_msg = '[job_refresh] reserve size : {size}, data : {data}'.format(size=len(reserve_job_list),
@@ -69,7 +67,6 @@ def job_running(msg, reserve):
 
 
 def job_clear(sche):
-    # sche.clear()
     sche.remove_all_jobs()
 
 
@@ -80,7 +77,7 @@ def get_reserves():
 
     reserve_job_list = []
     for reserve in reserve_list:
-        print('reserve name : ' + reserve.NAME_CHAR)
+        reserve_id = reserve.LIGHT_RESERVE_PK
         reserve_room = reserve.ROOM_CHAR  # room name
         reserve_days = reserve.DAY_CHAR.split(',')  # split days
         reserve_time = reserve.TIME_CHAR  # time. type : 12:01
@@ -118,6 +115,7 @@ def get_reserves():
         reserve_hour = reserve_time.split(':')[0]
         reserve_min = reserve_time.split(':')[1]
         reserve_job = {
+            'id': str(reserve_id),
             'msg': msg,
             'reserve': reserve,
             'hour': reserve_hour,
@@ -134,5 +132,4 @@ def set_msg(message, destination, room):
     tmp_dic = [('sender', 'ServerReserveDjango'), ('message', message), ('destination', destination), ('room', room)]
     from MyHome.MQTT.jsonParser import JSON_ENCODE_TOSERVER
     msg = JSON_ENCODE_TOSERVER(tmp_dic)
-    print('set_msg : ' + msg)
     return msg
