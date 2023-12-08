@@ -27,6 +27,7 @@ def job_refresh(scheduler):
         reserve_str = ''
         if len(reserve_job_list) != 0:
             for reserve_job in reserve_job_list:
+                print(reserve_job['msg'])
                 scheduler.add_job(
                     id=reserve_job['id'],
                     func=job_running,
@@ -43,9 +44,11 @@ def job_refresh(scheduler):
         kafka_msg = '[job_refresh] reserve size : {size}, data : {data}'.format(size=len(reserve_job_list),
                                                                                 data=reserve_str)
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
+        print(kafka_msg)
     except Exception as e:
         kafka_msg = '[job_refresh] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
+        print(kafka_msg)
 
 
 def job_running(msg, reserve):
@@ -65,7 +68,8 @@ def job_running(msg, reserve):
         set_reserve_result(pk=reserve_pk, activation=activation)
     except Exception as e:
         kafka_msg = '[job_running] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
-        producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
+        # producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
+        print(kafka_msg)
 
 
 def job_clear(sche):
@@ -73,9 +77,8 @@ def job_clear(sche):
 
 
 def get_reserves():
-    from .lightDB import get_all_light_list, get_all_reserve_list
+    from .lightDB import get_all_reserve_list, get_light_by_name
     reserve_list = get_all_reserve_list()  # get all reserve data
-    light_list = get_all_light_list()  # get all light data
 
     reserve_job_list = []
     for reserve in reserve_list:
@@ -107,12 +110,8 @@ def get_reserves():
             if running_today:
                 continue
 
-        category = ''
-        for light in light_list:
-            if light.LIGHT_ROOM_PK == reserve_room:
-                category = light.CATEGORY_CHAR
-                break
-        msg = set_msg(reserve.DO_CHAR, reserve_room, category)
+        room = get_light_by_name(reserve_room)
+        msg = set_msg(reserve.DO_CHAR, reserve_room, room.CATEGORY_CHAR)
 
         reserve_hour = reserve_time.split(':')[0]
         reserve_min = reserve_time.split(':')[1]
