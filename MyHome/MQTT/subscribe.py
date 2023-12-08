@@ -4,7 +4,6 @@ import paho.mqtt.client as mqtt
 from . import jsonParser
 from . import publisher
 import time
-import os, sys
 
 from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
 
@@ -44,29 +43,26 @@ class Subscribe:
         try:
             if self.selected_topic == self.topic_android:
                 payload = msg.payload.decode('utf-8')
-                msg_to_switch = jsonParser.JSON_Parser_android(payload)
-                # publisher.pub('MyHome/Light/Pub'+msgToSwitch['room'], msgToSwitch)
-                print('msgToSwitch : {}'.format(msg_to_switch))
-                kafka_msg = '[on_message] selected == android topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
-                producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
+                if payload == 'reserve':
+                    # will delete part(for legacy service work)
+                    pass
+                else:
+                    msg_to_switch = jsonParser.JSON_Parser_android(payload)
+                    # publisher.pub('MyHome/Light/Pub'+msgToSwitch['room'], msgToSwitch)
+                    print('msgToSwitch : {}'.format(msg_to_switch))
+                    # kafka_msg = '[on_message] selected == android topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
+                    # producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
             else:
                 payload = msg.payload.decode('utf-8')
                 msg_diction = jsonParser.JSON_Parser(payload)
 
                 if msg_diction['sender'] == 'Server':  # switch connection checking
                     if msg_diction['room'] in self.Room:
-                        self.Room[msg_diction['room']] = 'On'
-                        if msg_diction['room'] == 'small Room':
-                            for (room, status) in self.Room.items():
-                                db_diction = {'message': status, 'room': room, 'status': status}
-                                # db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': 'On'}
-                                # TODO: connection to DB
-                                # import MyHome.dbConnection as dbConn
-                                # db_connection = dbConn.Connection()
-                                # db_connection.main('ConnectUpdate', db_diction)
-                                self.Room[room] = 'Off'
+                        db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': 'On'}
+                        import MyHome.dbConnection as dbConn
+                        db_connection = dbConn.Connection()
+                        db_connection.main('ConnectUpdate', db_diction)
                 else:
-                    sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
                     import MyHome.dbConnection as dbConn
                     db_container = dbConn.Connection()
                     db_container.main('LightRecordInsert', msg_diction)

@@ -43,11 +43,9 @@ def job_refresh(scheduler):
         kafka_msg = '[job_refresh] reserve size : {size}, data : {data}'.format(size=len(reserve_job_list),
                                                                                 data=reserve_str)
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
-        # print(kafka_msg)
     except Exception as e:
         kafka_msg = '[job_refresh] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
-        # print(kafka_msg)
 
 
 def job_running(msg, reserve):
