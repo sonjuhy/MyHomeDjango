@@ -67,7 +67,7 @@ def job_running(msg, reserve):
         from .lightDB import set_reserve_result
         set_reserve_result(pk=reserve_pk, activation=activation)
     except Exception as e:
-        kafka_msg = '[job_running] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        kafka_msg = '[job_running] error mstwg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
         # producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         print(kafka_msg)
 
@@ -111,7 +111,11 @@ def get_reserves():
                 continue
 
         room = get_light_by_name(reserve_room)
-        msg = set_msg(reserve.DO_CHAR, reserve_room, room.CATEGORY_CHAR)
+        if reserve.DO_CHAR == 'ON':
+            do_char = 'On'
+        else:
+            do_char = 'Off'
+        msg = set_msg(do_char, reserve_room, room.CATEGORY_CHAR)
 
         reserve_hour = reserve_time.split(':')[0]
         reserve_min = reserve_time.split(':')[1]
