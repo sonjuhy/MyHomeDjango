@@ -5,7 +5,7 @@ from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
 
 
 def pub(topic, msg):
-    print('On Publisher topic : {}, msg : {}'.format(type(topic), type(msg)))
+    print('On Publisher topic : {topic}, msg : {msg}'.format(topic=topic, msg=msg))
     client = mqtt.Client('Django-mqtt')
     client.connect("192.168.0.254", 1883, 60)
     client.publish(topic, msg)
