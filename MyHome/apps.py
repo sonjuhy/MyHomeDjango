@@ -14,7 +14,7 @@ class MyhomeConfig(AppConfig):
             from .MQTT import subscribe
             from .Kafka.Kafka_Consumer import KafkaConsumerDefault
             mqtt_android = subscribe.Subscribe()
-            mqtt_android.connection(topic='android')
+            mqtt_android.connection(topic='server')
 
             mqtt_switch = subscribe.Subscribe()
             mqtt_switch.connection(topic='switch')

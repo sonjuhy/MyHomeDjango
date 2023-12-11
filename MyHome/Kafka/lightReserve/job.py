@@ -111,11 +111,7 @@ def get_reserves():
                 continue
 
         room = get_light_by_name(reserve_room)
-        if reserve.DO_CHAR == 'ON':
-            do_char = 'On'
-        else:
-            do_char = 'Off'
-        msg = set_msg(do_char, reserve_room, room.CATEGORY_CHAR)
+        msg = set_msg(reserve.DO_CHAR, reserve_room, room.CATEGORY_CHAR)
 
         reserve_hour = reserve_time.split(':')[0]
         reserve_min = reserve_time.split(':')[1]
@@ -134,7 +130,7 @@ def get_reserves():
 def set_msg(message, destination, room):
     # if change all refresh -> refresh some data, get data from kafka and make msg & return msg
     # msg sample : {"Light":{"sender":"Server","message":"OFF","destination":"living Room1","room":"living Room"}}
-    tmp_dic = [('sender', 'ServerReserveDjango'), ('message', message), ('destination', destination), ('room', room)]
-    from MyHome.MQTT.jsonParser import JSON_ENCODE_TOSERVER
-    msg = JSON_ENCODE_TOSERVER(tmp_dic)
+    tmp_dic = {'sender': 'ServerReserveDjango', 'message': message, 'destination': destination, 'room': room}
+    from MyHome.MQTT.jsonParser import json_encode_to_server
+    msg = json_encode_to_server(tmp_dic)
     return msg
