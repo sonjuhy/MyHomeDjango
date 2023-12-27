@@ -25,6 +25,7 @@ class Reserve(models.Model):
     DAY_CHAR = models.CharField(max_length=25)
     ACTIVATED_CHAR = models.CharField(max_length=20)
     REITERATION_CHAR = models.CharField(max_length=20)
+    HOLIDAY_TINYINT = models.IntegerField()
 
     class Meta:
         managed = False
