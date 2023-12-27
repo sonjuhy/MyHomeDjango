@@ -46,7 +46,8 @@ def job_refresh(scheduler):
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
         print(kafka_msg)
     except Exception as e:
-        kafka_msg = '[job_refresh] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        kafka_msg = '[job_refresh] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime(
+            '%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         print(kafka_msg)
 
@@ -67,7 +68,8 @@ def job_running(msg, reserve):
         from .lightDB import set_reserve_result
         set_reserve_result(pk=reserve_pk, activation=activation)
     except Exception as e:
-        kafka_msg = '[job_running] error mstwg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime('%Y-%m-%d %H:%M:%S')
+        kafka_msg = '[job_running] error mstwg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime(
+            '%Y-%m-%d %H:%M:%S')
         # producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         print(kafka_msg)
 
@@ -81,6 +83,18 @@ def get_reserves():
     reserve_list = get_all_reserve_list()  # get all reserve data
 
     reserve_job_list = []
+
+    from pytimekr import pytimekr
+    from datetime import datetime
+    today = datetime.now().today().strftime('%Y-%m-%d')
+    holidays = pytimekr.holidays()
+
+    today_holiday = False
+    for holiday in holidays:
+        if today == str(holiday):
+            today_holiday = True
+            break
+
     for reserve in reserve_list:
         reserve_id = reserve.LIGHT_RESERVE_PK
         reserve_room = reserve.ROOM_CHAR  # room name
@@ -88,6 +102,10 @@ def get_reserves():
         reserve_time = reserve.TIME_CHAR  # time. type : 12:01
         reiteration = reserve.REITERATION_CHAR  # repeat every week. type : True or False
         activation = reserve.ACTIVATED_CHAR
+        holiday_check = reserve.HOLIDAY_TINYINT
+
+        if holiday_check == 1 and today_holiday is True:
+            continue
 
         if reiteration == 'False':
             if activation == 'True':  # one time run & already activated
