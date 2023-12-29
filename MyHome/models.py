@@ -16,16 +16,16 @@ class RoomLight(models.Model):
 
 
 class Reserve(models.Model):
-    LIGHT_RESERVE_PK = models.IntegerField(primary_key=True)
-    NAME_CHAR = models.CharField(max_length=32)
-    ROOMKOR_CHAR = models.CharField(max_length=32)
-    TIME_CHAR = models.CharField(max_length=32)
-    ROOM_CHAR = models.CharField(max_length=32)
-    DO_CHAR = models.CharField(max_length=16)
-    DAY_CHAR = models.CharField(max_length=25)
-    ACTIVATED_CHAR = models.CharField(max_length=20)
-    REITERATION_CHAR = models.CharField(max_length=20)
-    HOLIDAY_TINYINT = models.IntegerField()
+    LIGHT_RESERVE_PK = models.AutoField(db_column='LIGHT_RESERVE_PK', primary_key=True)  # Field name made lowercase.
+    NAME_CHAR = models.CharField(db_column='NAME_CHAR', max_length=32, blank=True, null=True)  # Field name made lowercase.
+    ROOM_CHAR = models.CharField(db_column='ROOM_CHAR', max_length=32, blank=True, null=True)  # Field name made lowercase.
+    ROOMKOR_CHAR = models.CharField(db_column='ROOMKOR_CHAR', max_length=32, blank=True, null=True)  # Field name made lowercase.
+    TIME_CHAR = models.CharField(db_column='TIME_CHAR', max_length=32, blank=True, null=True)  # Field name made lowercase.
+    DO_CHAR = models.CharField(db_column='DO_CHAR', max_length=16, blank=True, null=True)  # Field name made lowercase.
+    DAY_CHAR = models.CharField(db_column='DAY_CHAR', max_length=25, blank=True, null=True)  # Field name made lowercase.
+    ACTIVATED_CHAR = models.CharField(db_column='ACTIVATED_CHAR', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    REITERATION_CHAR = models.CharField(db_column='REITERATION_CHAR', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    HOLIDAY_TINYINT = models.IntegerField(db_column='HOLIDAY_TINYINT', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False

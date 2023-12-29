@@ -70,7 +70,7 @@ def job_running(msg, reserve):
     except Exception as e:
         kafka_msg = '[job_running] error mstwg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
-        # producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
+        producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         print(kafka_msg)
 
 
