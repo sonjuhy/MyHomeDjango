@@ -1,6 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore
 
+
 class MainScheduler:
     _instance = None
     scheduler = None
@@ -14,4 +15,3 @@ class MainScheduler:
 
     def get_scheduler(self):
         return self.scheduler
-

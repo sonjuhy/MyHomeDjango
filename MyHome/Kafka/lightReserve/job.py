@@ -75,7 +75,10 @@ def job_running(msg, reserve):
 
 
 def job_clear(sche):
-    sche.remove_all_jobs()
+    for tmp_job in sche.get_jobs():
+        if tmp_job.id != 'iot_reserve_check':
+            sche.remove_job(tmp_job.id)
+    # sche.remove_all_jobs()
 
 
 def get_reserves():
