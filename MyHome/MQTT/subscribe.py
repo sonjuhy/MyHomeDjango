@@ -52,7 +52,8 @@ class Subscribe:
                         msg_to_switch = jsonParser.json_encode_to_switch(dic_from_payload)
                     else:
                         msg_to_switch = payload
-                    # publisher.pub('MyHome/Light/Pub'+dic_from_payload['room'], msg_to_switch)
+                    publisher.pub('MyHome/Light/Pub/'+dic_from_payload['room'], msg_to_switch)
+
                     print('msgToSwitch : {}'.format(msg_to_switch))
                     kafka_msg = '[on_message] selected == server topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))

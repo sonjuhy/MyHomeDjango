@@ -101,11 +101,14 @@ def get_reserves():
     for reserve in reserve_list:
         reserve_id = reserve.LIGHT_RESERVE_PK
         reserve_room = reserve.ROOM_CHAR  # room name
-        reserve_days = reserve.DAY_CHAR.split(',')  # split days
         reserve_time = reserve.TIME_CHAR  # time. type : 12:01
         reiteration = reserve.REITERATION_CHAR  # repeat every week. type : True or False
         activation = reserve.ACTIVATED_CHAR
         holiday_check = reserve.HOLIDAY_TINYINT
+        # reserve_days = reserve.DAY_CHAR.split(',')  # split days
+        reserve_days = reserve.DAY_CHAR
+        if reserve_days != 'No data':
+            reserve_days = reserve_days.split(',')
 
         if holiday_check == 1 and today_holiday is True:
             continue
