@@ -74,7 +74,7 @@ class Subscribe:
                     db_container.main('LightUpdate', msg_diction)
 
                     msg_to_android = jsonParser.json_encode_to_android(msg_diction)
-                    # publisher().pub('MyHome/Light/Result', msg_to_android)
+                    publisher.pub('MyHome/Light/Result', msg_to_android)
                     print('msgToAndroid : {}'.format(msg_to_android))
                     kafka_msg = '[on_message] from switch, to android topic : {topic}, msg : {msg}, time : {time}'.format(
                         topic=self.selected_topic, msg=msg_to_android, time=time.strftime('%Y-%m-%d %H:%M:%S'))
