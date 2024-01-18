@@ -44,7 +44,7 @@ class KafkaConsumerDefault:
                 value = message.value.decode('utf-8')
                 if topic == 'iot-topic':
                     if json.loads(value):
-                        parsing_data = jsonParser.JSON_Parser_android(value)
+                        parsing_data = jsonParser.json_parser_from_else(value)
                         publisher.pub('MyHome/Light/Pub/' + parsing_data['room'], value)
                         print('parsing_data on Kafka: %s' % value)
                     else:
