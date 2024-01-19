@@ -1,5 +1,6 @@
 import os
 import shutil
+import traceback
 
 from django.db import transaction
 
@@ -19,7 +20,6 @@ def get_default_private_path():
     return default_paths
 
 
-@transaction.atomic
 def file_move(uuid, file, path, action):
     mode = True  # public
     if 'private' in path:
@@ -56,70 +56,76 @@ def file_move(uuid, file, path, action):
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
             return -1
     except Exception as e:
-        print('file_move exist check error : path {path}, origin_path {origin_path}, origin_location {origin_location}'.format(path=path, origin_path=origin_path, origin_location=origin_location))
-        kafka_msg = '[file_move] msg : {}'.format(e)
+        print(
+            'file_move exist check error : path {path}, origin_path {origin_path}, origin_location {origin_location}'.format(
+                path=path, origin_path=origin_path, origin_location=origin_location))
+        kafka_msg = ('[file_move] file_move exist check error : path {path}, origin_path {origin_path}, '
+                     'origin_location {origin_location} \n log {log}').format(path=path, origin_path=origin_path,
+                                                                              origin_location=origin_location,
+                                                                              log=traceback.format_exc())
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
         return -1
 
     try:
-        db_conn = fileDB.DBConnection()
-        if action == 'delete':  # move to trash folder
-            if mode:  # public folder
-                data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path.replace(name, '')}
-                db_conn.main_query('deletePublic', data)
-            else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path.replace(name, '')}
-                db_conn.main_query('deletePrivate', data)
-        elif action == 'restore':  # restore file from trash folder
-            if mode:
-                data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path.replace(name, '')}
-                db_conn.main_query('restorePublic', data)
-                path = path.replace('trash', 'public')
-            else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path.replace(name, '')}
-                db_conn.main_query('restorePrivate', data)
-                path = path.replace('trash', '')
-        else:  # move to path
-            data = {'uuid': uuid, 'path': file, 'destination': path.replace(name, '')}
-            if mode:
-                db_conn.main_query('movePublic', data)
-            else:
-                db_conn.main_query('movePrivate', data)
+        with transaction.atomic():
+            db_conn = fileDB.DBConnection()
+            if action == 'delete':  # move to trash folder
+                if mode:  # public folder
+                    data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path.replace(name, '')}
+                    db_conn.main_query('deletePublic', data)
+                else:
+                    data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path.replace(name, '')}
+                    db_conn.main_query('deletePrivate', data)
+            elif action == 'restore':  # restore file from trash folder
+                if mode:
+                    data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path.replace(name, '')}
+                    db_conn.main_query('restorePublic', data)
+                    path = path.replace('trash', 'public')
+                else:
+                    data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path.replace(name, '')}
+                    db_conn.main_query('restorePrivate', data)
+                    path = path.replace('trash', '')
+            else:  # move to path
+                data = {'uuid': uuid, 'path': file, 'destination': path.replace(name, '')}
+                if mode:
+                    db_conn.main_query('movePublic', data)
+                else:
+                    db_conn.main_query('movePrivate', data)
 
-        shutil.move(file, origin_location+name)  # move file
-        kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
-            uuid=uuid, file=file, path=path, action=action)
-        producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
-        return 0
+            shutil.move(file, origin_location + name)  # move file
+            kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
+                uuid=uuid, file=file, path=path, action=action)
+            producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
+            return 0
     except Exception as e:
         print('error : {}'.format(e))
-        kafka_msg = '[file_move] msg : {}'.format(e)
+        kafka_msg = '[file_move] error while db & move. msg : {}'.format(traceback.format_exc())
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
+
         return -2
 
 
-@transaction.atomic
 def file_delete(uuid, file):
     try:
-        data = {'uuid': uuid, 'type': ''}
-        db_conn = fileDB.DBConnection()
-        db_conn.main_query('delete', data)
+        with transaction.atomic():
+            data = {'uuid': uuid, 'type': ''}
+            db_conn = fileDB.DBConnection()
+            db_conn.main_query('delete', data)
 
-        under_bar = '__'
-        origin_path = file.replace(under_bar, os.path.sep)
+            under_bar = '__'
+            origin_path = file.replace(under_bar, os.path.sep)
 
-        if os.path.exists(origin_path):
-            os.remove(origin_path)
-            kafka_msg = '[file_delete] file delete uuid : {uuid}, file : {file}'.format(uuid=uuid, file=file)
-            producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
-            return 0
-        else:
-            kafka_msg = "[file_delete] file doesn't exist"
-            producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-            return -1
+            if os.path.exists(origin_path):
+                os.remove(origin_path)
+                kafka_msg = '[file_delete] file delete uuid : {uuid}, file : {file}'.format(uuid=uuid, file=file)
+                producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
+                return 0
+            else:
+                kafka_msg = "[file_delete] file doesn't exist"
+                producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
+                return -1
     except Exception as e:
         print('file_delete error : {}'.format(e))
         kafka_msg = '[file_delete] msg : {}'.format(e)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
         return -1
-
