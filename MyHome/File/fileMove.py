@@ -22,50 +22,35 @@ def file_move(uuid, file, path, action):
     if 'private' in path:
         mode = False  # private
     under_bar = '__'
-    origin_path = os.path.join(*file.split(under_bar))
-    origin_location = os.path.join(*path.split(under_bar))
+    origin_path = file.replace(under_bar, os.path.sep)
+    origin_location = path.replace(under_bar, os.path.sep)
     name = file.split(under_bar)[-1]
 
     # check file exist
     try:
         if os.path.exists(origin_path) and os.path.exists(origin_location):
-            pass
+            if action == 'delete':  # move to trash folder
+                print('file_move path : {}'.format(path))
+                if mode:  # public
+                    default_paths = get_default_public_path()  # store, trash, thumbnail, top
+                    if os.path.exists(default_paths[1]) is False:
+                        kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
+                        producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
+                        return -1
+                else:  # private
+                    default_paths = get_default_private_path()
+                    if os.path.exists(default_paths[1]) is False:
+                        kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
+                        producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
+                        return -1
+
+            kafka_msg = '[file_move] file move uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
+                uuid=uuid, file=file, path=path, action=action)
+            producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
         else:
             kafka_msg = '[file_move] file is not exist : {}'.format(path)
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
             return -1
-        # files = os.listdir(origin_location)
-        # if os.path.isdir(origin_path):
-        #     for f in files:
-        #         if os.path.isdir(f):
-        #             if f is name:
-        #                 kafka_msg = '[file_move] file is not exist : {}'.format(path)
-        #                 producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-        #                 return -1
-        # else:
-        #     for f in files:
-        #         if not os.path.isdir(f):
-        #             if f is name:
-        #                 kafka_msg = '[file_move] file is not exist : {}'.format(path)
-        #                 producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-        #                 return -1
-        if action == 'delete':  # move to trash folder
-            print('file_move path : {}'.format(path))
-            if mode:  # public
-                default_paths = get_default_public_path()  # store, trash, thumbnail, top
-                if os.path.exists(default_paths[1]) is False:
-                    kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
-                    producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-                    return -1
-            else:  # private
-                default_paths = get_default_private_path()
-                if os.path.exists(default_paths[1]) is False:
-                    kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
-                    producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-                    return -1
-
-        kafka_msg = '[file_move] file move uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(uuid=uuid, file=file, path=path, action=action)
-        producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
     except Exception as e:
         print('file_move exist check error : {}'.format(e))
         kafka_msg = '[file_move] msg : {}'.format(e)
@@ -97,7 +82,7 @@ def file_move(uuid, file, path, action):
             else:
                 db_conn.main_query('movePrivate', data)
 
-        shutil.move(origin_path, os.path.join(origin_location, name))  # move file
+        shutil.move(origin_path, origin_location+name)  # move file
         kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
             uuid=uuid, file=file, path=path, action=action)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
@@ -116,7 +101,7 @@ def file_delete(uuid, file):
         db_conn.main_query('delete', data)
 
         under_bar = '__'
-        origin_path = os.path.join(*file.split(under_bar))
+        origin_path = file.replace(under_bar, os.path.sep)
 
         if os.path.exists(origin_path):
             os.remove(origin_path)

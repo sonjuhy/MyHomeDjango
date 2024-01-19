@@ -66,8 +66,8 @@ class DBConnection:
         under_bar = '__'
         if column.TYPE_CHAR == 'dir':
             root_dto = FilePublicTrashTb(
-                uuid_char=uuid.uuid3(uuid.NAMESPACE_DNS, os.path.join(data['destination'], column.NAME_CHAR)),
-                path_char=os.path.join(data['destination'], column.NAME_CHAR),
+                uuid_char=uuid.uuid3(uuid.NAMESPACE_DNS, data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR),
+                path_char=data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR,
                 origin_path_char=column.PATH_CHAR,
                 name_char=column.NAME_CHAR,
                 type_char='dir',
@@ -164,7 +164,7 @@ class DBConnection:
                         new_trash_dto.save()
                     file_info.delete()
         else:
-            tmp_path = os.path.join(data['destination'], column.NAME_CHAR)
+            tmp_path = data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR
             origin_path = tmp_path.replace(under_bar, os.path.sep)
 
             uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
