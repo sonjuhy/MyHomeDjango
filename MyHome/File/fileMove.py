@@ -22,9 +22,9 @@ def file_move(uuid, file, path, action):
     if 'private' in path:
         mode = False  # private
     under_bar = '__'
-    origin_path = file.replace(under_bar, os.path.sep)
-    origin_location = path.replace(under_bar, os.path.sep)
     name = file.split(under_bar)[-1]
+    origin_path = file.replace(under_bar, os.path.sep)
+    origin_location = path.replace(name, '').replace(under_bar, os.path.sep)
 
     # check file exist
     try:
