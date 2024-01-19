@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from django.db import transaction
+
 from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
 import MyHome.File.fileDBConnection as fileDB
 
@@ -17,6 +19,7 @@ def get_default_private_path():
     return default_paths
 
 
+@transaction.atomic
 def file_move(uuid, file, path, action):
     mode = True  # public
     if 'private' in path:
@@ -95,6 +98,7 @@ def file_move(uuid, file, path, action):
         return -2
 
 
+@transaction.atomic
 def file_delete(uuid, file):
     try:
         data = {'uuid': uuid, 'type': ''}
