@@ -62,28 +62,28 @@ def file_move(uuid, file, path, action):
         db_conn = fileDB.DBConnection()
         if action == 'delete':  # move to trash folder
             if mode:  # public folder
-                data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': origin_location}
+                data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path.replace(name, '')}
                 db_conn.main_query('deletePublic', data)
             else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': origin_location}
+                data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path.replace(name, '')}
                 db_conn.main_query('deletePrivate', data)
         elif action == 'restore':  # restore file from trash folder
             if mode:
-                data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': origin_location}
+                data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path.replace(name, '')}
                 db_conn.main_query('restorePublic', data)
                 path = path.replace('trash', 'public')
             else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': origin_location}
+                data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path.replace(name, '')}
                 db_conn.main_query('restorePrivate', data)
                 path = path.replace('trash', '')
         else:  # move to path
-            data = {'uuid': uuid, 'path': file, 'destination': origin_location}
+            data = {'uuid': uuid, 'path': file, 'destination': path.replace(name, '')}
             if mode:
                 db_conn.main_query('movePublic', data)
             else:
                 db_conn.main_query('movePrivate', data)
 
-        shutil.move(origin_path, origin_location+name)  # move file
+        shutil.move(file, path+name)  # move file
         kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
             uuid=uuid, file=file, path=path, action=action)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
