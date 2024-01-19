@@ -76,18 +76,18 @@ def file_move(uuid, file, path, action):
         db_conn = fileDB.DBConnection()
         if action == 'delete':  # move to trash folder
             if mode:  # public folder
-                data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': ''}
+                data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path}
                 db_conn.main_query('deletePublic', data)
             else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': ''}
+                data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path}
                 db_conn.main_query('deletePrivate', data)
         elif action == 'restore':  # restore file from trash folder
             if mode:
-                data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': ''}
+                data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path}
                 db_conn.main_query('restorePublic', data)
                 path = path.replace('trash', 'public')
             else:
-                data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': ''}
+                data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path}
                 db_conn.main_query('restorePrivate', data)
                 path = path.replace('trash', '')
         else:  # move to path
@@ -115,7 +115,7 @@ def file_delete(uuid, file):
         db_conn = fileDB.DBConnection()
         db_conn.main_query('delete', data)
 
-        under_bar = '--'
+        under_bar = '__'
         origin_path = os.path.join(*file.split(under_bar))
 
         if os.path.exists(origin_path):
