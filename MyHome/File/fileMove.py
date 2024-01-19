@@ -92,7 +92,7 @@ def file_move(uuid, file, path, action):
                 else:
                     db_conn.main_query('movePrivate', data)
 
-            shutil.move(file, origin_location + name)  # move file
+            shutil.move(origin_path, origin_location + name)  # move file
             kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
                 uuid=uuid, file=file, path=path, action=action)
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
@@ -101,7 +101,6 @@ def file_move(uuid, file, path, action):
         print('error : {}'.format(e))
         kafka_msg = '[file_move] error while db & move. msg : {}'.format(traceback.format_exc())
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-
         return -2
 
 
