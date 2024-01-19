@@ -53,7 +53,7 @@ def file_move(uuid, file, path, action):
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
             return -1
     except Exception as e:
-        print('file_move exist check error : {}'.format(e))
+        print('file_move exist check error : path {path}, origin_path {origin_path}, origin_location {origin_location}'.format(path=path, origin_path=origin_path, origin_location=origin_location))
         kafka_msg = '[file_move] msg : {}'.format(e)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
         return -1
@@ -83,7 +83,7 @@ def file_move(uuid, file, path, action):
             else:
                 db_conn.main_query('movePrivate', data)
 
-        shutil.move(file, path+name)  # move file
+        shutil.move(file, origin_location+name)  # move file
         kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
             uuid=uuid, file=file, path=path, action=action)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
