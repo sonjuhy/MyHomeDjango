@@ -67,7 +67,7 @@ class DBConnection:
         if column.TYPE_CHAR == 'dir':
             root_dto = FilePublicTrashTb(
                 uuid_char=uuid.uuid3(uuid.NAMESPACE_DNS, data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR),
-                path_char=data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR,
+                path_char=data['destination']+column.NAME_CHAR,
                 origin_path_char=column.PATH_CHAR,
                 name_char=column.NAME_CHAR,
                 type_char='dir',
@@ -164,7 +164,7 @@ class DBConnection:
                         new_trash_dto.save()
                     file_info.delete()
         else:
-            tmp_path = data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR
+            tmp_path = data['destination']+column.NAME_CHAR
             origin_path = tmp_path.replace(under_bar, os.path.sep)
 
             uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
@@ -345,8 +345,8 @@ class DBConnection:
 
     def move_query(self, data):
         column = self.schema.objects.get(UUID_CHAR=data['uuid'])
-        tmp_location = column.LOCATION_CHAR.replace(column.NAME_CHAR, '')
-        column.PATH_CHAR = data['path']
+        tmp_location = data['destination']
+        column.PATH_CHAR = data['destination'] + column.NAME_CHAR
         column.LOCATION_CHAR = tmp_location
         column.UUID_CHAR = uuid.uuid3(uuid.NAMESPACE_DNS, data['path'])
         column.save()
