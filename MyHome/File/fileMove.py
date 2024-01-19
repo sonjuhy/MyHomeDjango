@@ -48,7 +48,8 @@ def file_move(uuid, file, path, action):
                 uuid=uuid, file=file, path=path, action=action)
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
         else:
-            kafka_msg = '[file_move] file is not exist : {}'.format(path)
+            kafka_msg = ('[file_move] file is not exist : path {path}, origin_path {origin_path}, origin_location {'
+                         'origin_location}').format(path=path, origin_path=origin_path, origin_location=origin_location)
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
             return -1
     except Exception as e:
