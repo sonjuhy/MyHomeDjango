@@ -124,14 +124,14 @@ def file_move(uuid, file, path, action):  # file : file path, path : location to
 def file_delete(uuid, file):
     try:
         with transaction.atomic():
-            data = {'uuid': uuid, 'type': ''}
-            db_conn = fileDB.DBConnection()
-            db_conn.main_query('delete', data)
-
             under_bar = '__'
             origin_path = file.replace(under_bar, os.path.sep)
 
             if os.path.exists(origin_path):
+                data = {'uuid': uuid, 'type': ''}
+                db_conn = fileDB.DBConnection()
+                db_conn.main_query('delete', data)
+
                 os.remove(origin_path)
                 kafka_msg = '[file_delete] file delete uuid : {uuid}, file : {file}'.format(uuid=uuid, file=file)
                 producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
