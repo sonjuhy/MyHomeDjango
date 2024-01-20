@@ -34,13 +34,15 @@ def file_move(uuid, file, path, action):
             if action == 'delete':  # move to trash folder
                 if mode:  # public
                     default_paths = get_default_public_path()  # store, trash, thumbnail, top
-                    if os.path.exists(default_paths[1]) is False:
+                    trash_path = default_paths[1].replace('__', os.path.sep)
+                    if trash_path is False:
                         kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
                         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
                         return -1
                 else:  # private
                     default_paths = get_default_private_path()
-                    if os.path.exists(default_paths[1]) is False:
+                    trash_path = default_paths[1].replace('__', os.path.sep)
+                    if trash_path is False:
                         kafka_msg = '[file_move] trash folder is not exist : {}'.format(path)
                         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
                         return -1
