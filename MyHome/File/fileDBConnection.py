@@ -321,28 +321,28 @@ class DBConnection:
 
             if data['type'] == 'public':
                 new_public_dto = FilePublic(
-                    uuid_char=uuid_str,
-                    path_char=path_str,
-                    origin_path_char=origin_path,
-                    name_char=name_str,
-                    type_char=type_str,
-                    size_float=size_float,
-                    location_char=location_str,
-                    state_int=state_int
+                    UUID_CHAR=uuid_str,
+                    PATH_CHAR=path_str,
+                    # origin_path_char=origin_path,
+                    NAME_CHAR=name_str,
+                    TYPE_CHAR=type_str,
+                    SIZE_FLOAT=size_float,
+                    LOCATION_CHAR=location_str,
+                    STATE_INT=state_int
                 )
                 new_public_dto.save()
             else:
                 owner = column.owner_char
                 new_private_dto = FilePrivate(
-                    uuid_char=uuid_str,
-                    path_char=path_str,
-                    origin_path_char=origin_path,
-                    name_char=name_str,
-                    type_char=type_str,
-                    size_float=size_float,
-                    owner_char=owner,
-                    location_char=location_str,
-                    state_int=state_int
+                    UUID_CHAR=uuid_str,
+                    PATH_CHAR=path_str,
+                    # origin_path_char=origin_path,
+                    NAME_CHAR=name_str,
+                    TYPE_CHAR=type_str,
+                    SIZE_FLOAT=size_float,
+                    OWNER_CHAR=owner,
+                    LOCATION_CHAR=location_str,
+                    STATE_INT=state_int
                 )
                 new_private_dto.save()
         column.delete()
