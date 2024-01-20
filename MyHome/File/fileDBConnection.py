@@ -1,4 +1,3 @@
-import os
 import uuid
 
 from django.db.models.functions import Length
@@ -66,9 +65,16 @@ class DBConnection:
 
     def remove_to_trash_query(self, data):
         column = self.schema.objects.get(UUID_CHAR=data['uuid'])
-        default_paths = self.get_default_path(data['type'])
-        default_path = default_paths[0]
-        default_trash = default_paths[1]
+        # default_paths = self.get_default_path(data['type'])
+        # default_path = default_paths[0]
+        # default_trash = default_paths[1]
+
+        if data['type'] == 'public':
+            default_path = FileDefaultPathTb.objects.get(path_name='store').public_default_path_char
+            default_trash = FileDefaultPathTb.objects.get(path_name='trash').public_default_path_char
+        else:
+            default_path = FileDefaultPathTb.objects.get(path_name='store').private_default_path_char
+            default_trash = FileDefaultPathTb.objects.get(path_name='trash').private_default_path_char
 
         if column.TYPE_CHAR == 'dir':
             dirs = (self.schema.objects.filter(PATH_CHAR__contains=column.PATH_CHAR)
