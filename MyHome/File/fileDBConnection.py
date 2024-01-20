@@ -215,7 +215,7 @@ class DBConnection:
                         .annotate(path_len=Length('origin_path_char')).order_by('path_len'))
             for tmp_dir in tmp_dirs:
                 uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_dir.origin_path_char)
-                if tmp_dir.TYPE_CHAR == 'dir':
+                if tmp_dir.type_char == 'dir':
                     type_str = 'dir'
                     size_float = 0
                     state_int = 0
@@ -247,7 +247,7 @@ class DBConnection:
                         )
                         new_private_dto.save()
                 else:
-                    type_str = tmp_dir.TYPE_CHAR
+                    type_str = tmp_dir.type_char
                     size_float = tmp_dir.size_float
                     state_int = 0
 
