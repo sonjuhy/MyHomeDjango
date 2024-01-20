@@ -229,10 +229,11 @@ class DBConnection:
                     path_str = origin_path
                     name_str = dir_info.NAME_CHAR
 
-                    location_str = ''
-                    tmp_locations = origin_path.slite(under_bar)
-                    for point in range(len(tmp_locations) - 1):
-                        location_str += tmp_locations[point] + under_bar
+                    location_str = origin_path.replace(name_str, '')
+                    # location_str = ''
+                    # tmp_locations = origin_path.slite(under_bar)
+                    # for point in range(len(tmp_locations) - 1):
+                    #     location_str += tmp_locations[point] + under_bar
 
                     if dir_info.TYPE_CHAR == 'dir':
                         dir_list.append(dir_info)
@@ -309,10 +310,11 @@ class DBConnection:
             path_str = origin_path
             name_str = column.name_char
 
-            location_str = ''
-            tmp_locations = origin_path.slite(under_bar)
-            for point in range(len(tmp_locations) - 1):
-                location_str += tmp_locations[point] + under_bar
+            location_str = origin_path.replace(name_str, '')
+            # location_str = ''
+            # tmp_locations = origin_path.slite(under_bar)
+            # for point in range(len(tmp_locations) - 1):
+            #     location_str += tmp_locations[point] + under_bar
             type_str = column.type_char
             size_float = column.size_float
             state_int = 0
