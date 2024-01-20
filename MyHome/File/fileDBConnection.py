@@ -212,7 +212,7 @@ class DBConnection:
         under_bar = '__'
         if column.type_char == 'dir':
             tmp_dirs = (self.schema.objects.filter(origin_path_char__contains=column.origin_path_char)
-                        .annotate(path_len=Length('ORIGIN_PATH_CHAR')).order_by('path_len'))
+                        .annotate(path_len=Length('origin_path_char')).order_by('path_len'))
             for tmp_dir in tmp_dirs:
                 uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_dir.origin_path_char)
                 if tmp_dir.TYPE_CHAR == 'dir':
