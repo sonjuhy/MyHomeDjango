@@ -133,7 +133,8 @@ class DBConnection:
                     path_str = tmp_path
                     name_str = tmp_file
                     type_str = os.path.splitext(tmp_file)[1].lstrip('.')
-                    size_float = os.path.getsize(origin_path.replace(under_bar, os.path.sep))
+                    # size_float = os.path.getsize(origin_path.replace(under_bar, os.path.sep))
+                    size_float = file_info.SIZE_FLOAT
                     location_str = data['destination']
                     state_int = 0
 
@@ -172,7 +173,7 @@ class DBConnection:
             path_str = tmp_path
             name_str = column.NAME_CHAR
             type_str = column.TYPE_CHAR
-            size_float = os.path.getsize(origin_path)
+            size_float = column.SIZE_FLOAT
             location_str = data['destination']
             state_int = 0
 
