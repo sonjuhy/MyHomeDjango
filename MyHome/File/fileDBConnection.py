@@ -208,11 +208,11 @@ class DBConnection:
     def restore_from_trash_query(self, data):
         column = self.schema.objects.get(uuid_char=data['uuid'])
         under_bar = '__'
-        if column.TYPE_CHAR == 'dir':
+        if column.type_char == 'dir':
             # 1. 루트 폴더 산하에 있는걸 찾는다. findByLocation(path)
             # 2. 폴더들은 따로 저장한다.
             # 3. 끝나면 폴더들을 루트로 잡고 다시 찾는다.
-            dirs = self.schema.objects.get(location_char=column.PATH_CHAR)
+            dirs = self.schema.objects.get(location_char=column.path_char)
             dir_list = []
             for dir_info in dirs:
                 dir_list.append(dir_info)
@@ -302,18 +302,18 @@ class DBConnection:
                             )
                             new_private_dto.save()
         else:
-            tmp_path = column.PATH_CHAR
-            origin_path = column.ORIGIN_PATH_CHAR
+            tmp_path = column.path_char
+            origin_path = column.origin_path_char
 
             uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
             path_str = origin_path
-            name_str = column.NAME_CHAR
+            name_str = column.name_char
 
             location_str = ''
             tmp_locations = origin_path.slite(under_bar)
             for point in range(len(tmp_locations) - 1):
                 location_str += tmp_locations[point] + under_bar
-            type_str = column.TYPE_CHAR
+            type_str = column.type_char
             size_float = column.size_float
             state_int = 0
 
@@ -330,7 +330,7 @@ class DBConnection:
                 )
                 new_public_dto.save()
             else:
-                owner = column.OWNER_CHAR
+                owner = column.owner_char
                 new_private_dto = FilePrivate(
                     uuid_char=uuid_str,
                     path_char=path_str,
