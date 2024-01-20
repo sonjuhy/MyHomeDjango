@@ -66,42 +66,29 @@ class DBConnection:
 
     def remove_to_trash_query(self, data):
         column = self.schema.objects.get(UUID_CHAR=data['uuid'])
-        under_bar = '__'
-        if column.TYPE_CHAR == 'dir':
-            root_dto = FilePublicTrashTb(
-                uuid_char=uuid.uuid3(uuid.NAMESPACE_DNS, data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR),
-                path_char=data['destination']+column.NAME_CHAR,
-                origin_path_char=column.PATH_CHAR,
-                name_char=column.NAME_CHAR,
-                type_char='dir',
-                size_float=0,
-                location_char=data['destination'],
-                state_int=0
-            )
-            root_dto.save()
-            for (root, dirs, files) in os.walk(column.PATH_CHAR):
-                # root(object) : files root folder path
-                # dirs(len) : dirs under root folder
-                # files(len) : dirs under root file
-                under_bar_root = root.replace(os.path.sep, under_bar)
-                for tmp_dir in dirs:
-                    tmp_path = (root + tmp_dir).replace(os.path.sep, under_bar)
-                    dir_info = self.schema.objects.get(PATH_CHAR=tmp_path)
-                    origin_path = dir_info.PATH_CHAR
+        default_paths = self.get_default_path(data['type'])
+        default_path = default_paths[0]
+        default_trash = default_paths[1]
 
-                    uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
-                    path_str = tmp_path
-                    name_str = tmp_dir
+        if column.TYPE_CHAR == 'dir':
+            dirs = (self.schema.objects.filter(PATH_CHAR__contains=column.PATH_CHAR)
+                        .annotate(path_len=Length('PATH_CHAR')).order_by('path_len'))
+
+            for tmp_dir in dirs:
+                uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_dir.pat)
+                tmp_path = tmp_dir.PATH_CHAR.replace(default_path, default_trash)
+                location_str = data['destination']
+                if tmp_dir.TYPE_CHAR == 'dir':
+                    name_str = tmp_dir.NAME_CHAR
                     type_str = 'dir'
                     size_float = 0
-                    location_str = data['destination']
                     state_int = 0
 
                     if data['type'] == 'public':
                         new_trash_dto = FilePublicTrashTb(
                             uuid_char=uuid_str,
-                            path_char=path_str,
-                            origin_path_char=origin_path,
+                            path_char=tmp_path,
+                            origin_path_char=tmp_dir.PATH_CHAR,
                             name_char=name_str,
                             type_char=type_str,
                             size_float=size_float,
@@ -110,11 +97,11 @@ class DBConnection:
                         )
                         new_trash_dto.save()
                     else:
-                        owner = dir_info.OWNER_CHAR
+                        owner = tmp_dir.OWNER_CHAR
                         new_trash_dto = FilePrivateTrashTb(
                             uuid_char=uuid_str,
-                            path_char=path_str,
-                            origin_path_char=origin_path,
+                            path_char=tmp_path,
+                            origin_path_char=tmp_dir.PATH_CHAR,
                             name_char=name_str,
                             type_char=type_str,
                             size_float=size_float,
@@ -123,28 +110,17 @@ class DBConnection:
                             state_int=state_int
                         )
                         new_trash_dto.save()
-
-                    dir_info.delete()
-
-                for tmp_file in files:
-                    tmp_path = (under_bar_root + tmp_file).replace(os.path.sep, under_bar)
-                    file_info = self.schema.objects.get(PATH_CHAR=tmp_path)
-                    origin_path = file_info.PATH_CHAR
-
-                    uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
-                    path_str = tmp_path
-                    name_str = tmp_file
-                    type_str = os.path.splitext(tmp_file)[1].lstrip('.')
-                    # size_float = os.path.getsize(origin_path.replace(under_bar, os.path.sep))
-                    size_float = file_info.SIZE_FLOAT
-                    location_str = data['destination']
+                else:
+                    name_str = tmp_dir.NAME_CHAR
+                    type_str = tmp_dir.TYPE_CHAR
+                    size_float = tmp_dir.SIZE_FLOAT
                     state_int = 0
 
                     if data['type'] == 'public':
                         new_trash_dto = FilePublicTrashTb(
                             uuid_char=uuid_str,
-                            path_char=path_str,
-                            origin_path_char=origin_path,
+                            path_char=tmp_path,
+                            origin_path_char=tmp_dir.PATH_CHAR,
                             name_char=name_str,
                             type_char=type_str,
                             size_float=size_float,
@@ -153,11 +129,11 @@ class DBConnection:
                         )
                         new_trash_dto.save()
                     else:
-                        owner = file_info.OWNER_CHAR
+                        owner = tmp_dir.OWNER_CHAR
                         new_trash_dto = FilePrivateTrashTb(
                             uuid_char=uuid_str,
-                            path_char=path_str,
-                            origin_path_char=origin_path,
+                            path_char=tmp_path,
+                            origin_path_char=tmp_dir.PATH_CHAR,
                             name_char=name_str,
                             type_char=type_str,
                             size_float=size_float,
@@ -166,7 +142,106 @@ class DBConnection:
                             state_int=state_int
                         )
                         new_trash_dto.save()
-                    file_info.delete()
+                tmp_dir.delete()
+            # root_dto = FilePublicTrashTb(
+            #     uuid_char=uuid.uuid3(uuid.NAMESPACE_DNS, data['destination'].replace(under_bar, os.path.sep)+column.NAME_CHAR),
+            #     path_char=data['destination']+column.NAME_CHAR,
+            #     origin_path_char=column.PATH_CHAR,
+            #     name_char=column.NAME_CHAR,
+            #     type_char='dir',
+            #     size_float=0,
+            #     location_char=data['destination'],
+            #     state_int=0
+            # )
+            # root_dto.save()
+            # for (root, dirs, files) in os.walk(column.PATH_CHAR):
+            #     # root(object) : files root folder path
+            #     # dirs(len) : dirs under root folder
+            #     # files(len) : dirs under root file
+            #     under_bar_root = root.replace(os.path.sep, under_bar)
+            #     for tmp_dir in dirs:
+            #         tmp_path = (root + tmp_dir).replace(os.path.sep, under_bar)
+            #         dir_info = self.schema.objects.get(PATH_CHAR=tmp_path)
+            #         origin_path = dir_info.PATH_CHAR
+            #
+            #         uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
+            #         path_str = tmp_path
+            #         name_str = tmp_dir
+            #         type_str = 'dir'
+            #         size_float = 0
+            #         location_str = data['destination']
+            #         state_int = 0
+            #
+            #         if data['type'] == 'public':
+            #             new_trash_dto = FilePublicTrashTb(
+            #                 uuid_char=uuid_str,
+            #                 path_char=path_str,
+            #                 origin_path_char=origin_path,
+            #                 name_char=name_str,
+            #                 type_char=type_str,
+            #                 size_float=size_float,
+            #                 location_char=location_str,
+            #                 state_int=state_int
+            #             )
+            #             new_trash_dto.save()
+            #         else:
+            #             owner = dir_info.OWNER_CHAR
+            #             new_trash_dto = FilePrivateTrashTb(
+            #                 uuid_char=uuid_str,
+            #                 path_char=path_str,
+            #                 origin_path_char=origin_path,
+            #                 name_char=name_str,
+            #                 type_char=type_str,
+            #                 size_float=size_float,
+            #                 owner_char=owner,
+            #                 location_char=location_str,
+            #                 state_int=state_int
+            #             )
+            #             new_trash_dto.save()
+            #
+            #         dir_info.delete()
+            #
+            #     for tmp_file in files:
+            #         tmp_path = (under_bar_root + tmp_file).replace(os.path.sep, under_bar)
+            #         file_info = self.schema.objects.get(PATH_CHAR=tmp_path)
+            #         origin_path = file_info.PATH_CHAR
+            #
+            #         uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
+            #         path_str = tmp_path
+            #         name_str = tmp_file
+            #         type_str = os.path.splitext(tmp_file)[1].lstrip('.')
+            #         # size_float = os.path.getsize(origin_path.replace(under_bar, os.path.sep))
+            #         size_float = file_info.SIZE_FLOAT
+            #         location_str = data['destination']
+            #         state_int = 0
+            #
+            #         if data['type'] == 'public':
+            #             new_trash_dto = FilePublicTrashTb(
+            #                 uuid_char=uuid_str,
+            #                 path_char=path_str,
+            #                 origin_path_char=origin_path,
+            #                 name_char=name_str,
+            #                 type_char=type_str,
+            #                 size_float=size_float,
+            #                 location_char=location_str,
+            #                 state_int=state_int
+            #             )
+            #             new_trash_dto.save()
+            #         else:
+            #             owner = file_info.OWNER_CHAR
+            #             new_trash_dto = FilePrivateTrashTb(
+            #                 uuid_char=uuid_str,
+            #                 path_char=path_str,
+            #                 origin_path_char=origin_path,
+            #                 name_char=name_str,
+            #                 type_char=type_str,
+            #                 size_float=size_float,
+            #                 owner_char=owner,
+            #                 location_char=location_str,
+            #                 state_int=state_int
+            #             )
+            #             new_trash_dto.save()
+            #         file_info.delete()
         else:
             tmp_path = data['destination']+column.NAME_CHAR
             origin_path = column.PATH_CHAR
