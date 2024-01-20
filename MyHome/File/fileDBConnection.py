@@ -65,9 +65,6 @@ class DBConnection:
 
     def remove_to_trash_query(self, data):
         column = self.schema.objects.get(UUID_CHAR=data['uuid'])
-        # default_paths = self.get_default_path(data['type'])
-        # default_path = default_paths[0]
-        # default_trash = default_paths[1]
 
         if data['type'] == 'public':
             default_path = FileDefaultPathTb.objects.get(path_name='store').public_default_path_char
@@ -81,8 +78,8 @@ class DBConnection:
                         .annotate(path_len=Length('PATH_CHAR')).order_by('path_len'))
 
             for tmp_dir in dirs:
-                uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_dir.pat)
                 tmp_path = tmp_dir.PATH_CHAR.replace(default_path, default_trash)
+                uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
                 location_str = data['destination']
                 if tmp_dir.TYPE_CHAR == 'dir':
                     name_str = tmp_dir.NAME_CHAR
