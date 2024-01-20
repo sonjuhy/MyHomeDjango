@@ -42,6 +42,7 @@ class DBConnection:
 
         elif mode == 'default':
             self.schema = FileDefaultPathTb
+            return self.get_default_path(mode=data)
 
     def get_default_path(self, mode):
         store_path = self.schema.objects.get(path_name='store')

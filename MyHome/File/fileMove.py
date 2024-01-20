@@ -16,7 +16,7 @@ def get_default_public_path():
 
 def get_default_private_path():
     db_conn = fileDB.DBConnection()
-    default_paths = db_conn.main_query('default', 'public')
+    default_paths = db_conn.main_query('default', 'private')
     return default_paths
 
 
@@ -28,12 +28,10 @@ def file_move(uuid, file, path, action):
     name = file.split(under_bar)[-1]
     origin_path = file.replace(under_bar, os.path.sep)
     origin_location = path.replace(name, '').replace(under_bar, os.path.sep)
-
     # check file exist
     try:
         if os.path.exists(origin_path) and os.path.exists(origin_location):
             if action == 'delete':  # move to trash folder
-                print('file_move path : {}'.format(path))
                 if mode:  # public
                     default_paths = get_default_public_path()  # store, trash, thumbnail, top
                     if os.path.exists(default_paths[1]) is False:
@@ -128,3 +126,4 @@ def file_delete(uuid, file):
         kafka_msg = '[file_delete] msg : {}'.format(e)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
         return -1
+
