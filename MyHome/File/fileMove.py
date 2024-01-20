@@ -20,7 +20,7 @@ def get_default_private_path():
     return default_paths
 
 
-def file_move(uuid, file, path, action):
+def file_move(uuid, file, path, action):  # file : file path, path : location to move file
     mode = True  # public
     if 'private' in path:
         mode = False  # private

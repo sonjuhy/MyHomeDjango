@@ -1,6 +1,8 @@
 import os
 import uuid
 
+from django.db.models.functions import Length
+
 from MyHome.models import FilePrivate, FilePublic, FilePublicTrashTb, FilePrivateTrashTb, FileDefaultPathTb
 
 
@@ -209,99 +211,157 @@ class DBConnection:
         column = self.schema.objects.get(uuid_char=data['uuid'])
         under_bar = '__'
         if column.type_char == 'dir':
-            # 1. 루트 폴더 산하에 있는걸 찾는다. findByLocation(path)
-            # 2. 폴더들은 따로 저장한다.
-            # 3. 끝나면 폴더들을 루트로 잡고 다시 찾는다.
-            dirs = self.schema.objects.get(location_char=column.path_char)
-            dir_list = []
-            for dir_info in dirs:
-                dir_list.append(dir_info)
+            tmp_dirs = (self.schema.objects.filter(origin_path_char__contains=column.origin_path_char)
+                        .annotate(path_len=Length('ORIGIN_PATH_CHAR')).order_by('path_len'))
+            for tmp_dir in tmp_dirs:
+                uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_dir.origin_path_char)
+                if tmp_dir.TYPE_CHAR == 'dir':
+                    type_str = 'dir'
+                    size_float = 0
+                    state_int = 0
 
-            while len(dir_list) > 0:
-                list_size = len(dir_list)
-                for i in range(list_size):
-                    dir_info = dir_list.pop(0)  # root folder
-
-                    tmp_path = dir_info.PATH_CHAR
-                    origin_path = dir_info.ORIGIN_PATH_CHAR
-
-                    uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
-                    path_str = origin_path
-                    name_str = dir_info.NAME_CHAR
-
-                    location_str = origin_path.replace(name_str, '')
-                    # location_str = ''
-                    # tmp_locations = origin_path.slite(under_bar)
-                    # for point in range(len(tmp_locations) - 1):
-                    #     location_str += tmp_locations[point] + under_bar
-
-                    if dir_info.TYPE_CHAR == 'dir':
-                        dir_list.append(dir_info)
-                        tmp_dir_list = self.schema.objects.get(location_char=dir_info.PATH_CHAR)
-                        for tmp_dir in tmp_dir_list:
-                            dir_list.append(tmp_dir)
-
-                        type_str = 'dir'
-                        size_float = 0
-                        state_int = 0
-
-                        if data['type'] == 'public':
-                            new_public_dto = FilePublic(
-                                UUID_CHAR=uuid_str,
-                                PATH_CHAR=path_str,
-                                NAME_CHAR=name_str,
-                                TYPE_CHAR=type_str,
-                                SIZE_FLOAT=size_float,
-                                LOCATION_CHAR=location_str,
-                                STATE_INT=state_int,
-                                DELETE_STATUS_INT=0
-                            )
-                            new_public_dto.save()
-                        else:
-                            owner = dir_info.OWNER_CHAR
-                            new_private_dto = FilePrivate(
-                                UUID_CHAR=uuid_str,
-                                PATH_CHAR=path_str,
-                                NAME_CHAR=name_str,
-                                TYPE_CHAR=type_str,
-                                SIZE_FLOAT=size_float,
-                                OWNER_CHAR=owner,
-                                LOCATION_CHAR=location_str,
-                                STATE_INT=state_int,
-                                DELETE_STATUS_INT=0
-                            )
-                            new_private_dto.save()
+                    if data['type'] == 'public':
+                        new_public_dto = FilePublic(
+                            UUID_CHAR=uuid_str,
+                            PATH_CHAR=tmp_dir.origin_path_char,
+                            NAME_CHAR=tmp_dir.name_char,
+                            TYPE_CHAR=type_str,
+                            SIZE_FLOAT=size_float,
+                            LOCATION_CHAR=tmp_dir.origin_path_char.replace(tmp_dir.name_char, ''),
+                            STATE_INT=state_int,
+                            DELETE_STATUS_INT=0
+                        )
+                        new_public_dto.save()
                     else:
-                        type_str = dir_info.TYPE_CHAR
-                        size_float = dir_info.size_float
-                        state_int = 0
+                        owner = tmp_dir.owner_char
+                        new_private_dto = FilePrivate(
+                            UUID_CHAR=uuid_str,
+                            PATH_CHAR=tmp_dir.origin_path_char,
+                            NAME_CHAR=tmp_dir.name_char,
+                            TYPE_CHAR=type_str,
+                            SIZE_FLOAT=size_float,
+                            OWNER_CHAR=owner,
+                            LOCATION_CHAR=tmp_dir.origin_path_char.replace(tmp_dir.name_char, ''),
+                            STATE_INT=state_int,
+                            DELETE_STATUS_INT=0
+                        )
+                        new_private_dto.save()
+                else:
+                    type_str = tmp_dir.TYPE_CHAR
+                    size_float = tmp_dir.size_float
+                    state_int = 0
 
-                        if data['type'] == 'public':
-                            new_public_dto = FilePublic(
-                                UUID_CHAR=uuid_str,
-                                PATH_CHAR=path_str,
-                                # origin_path_char=origin_path,
-                                NAME_CHAR=name_str,
-                                TYPE_CHAR=type_str,
-                                SIZE_FLOAT=size_float,
-                                LOCATION_CHAR=location_str,
-                                STATE_INT=state_int
-                            )
-                            new_public_dto.save()
-                        else:
-                            owner = dir_info.OWNER_CHAR
-                            new_private_dto = FilePrivate(
-                                UUID_CHAR=uuid_str,
-                                PATH_CHAR=path_str,
-                                # origin_path_char=origin_path,
-                                NAME_CHAR=name_str,
-                                TYPE_CHAR=type_str,
-                                SIZE_FLOAT=size_float,
-                                OWNER_CHAR=owner,
-                                LOCATION_CHAR=location_str,
-                                STATE_INT=state_int
-                            )
-                            new_private_dto.save()
+                    if data['type'] == 'public':
+                        new_public_dto = FilePublic(
+                            UUID_CHAR=uuid_str,
+                            PATH_CHAR=tmp_dir.origin_path_char,
+                            NAME_CHAR=tmp_dir.name_char,
+                            TYPE_CHAR=type_str,
+                            SIZE_FLOAT=size_float,
+                            LOCATION_CHAR=tmp_dir.origin_path_char.replace(tmp_dir.name_char, ''),
+                            STATE_INT=state_int
+                        )
+                        new_public_dto.save()
+                    else:
+                        owner = tmp_dir.owner_char
+                        new_private_dto = FilePrivate(
+                            UUID_CHAR=uuid_str,
+                            PATH_CHAR=tmp_dir.origin_path_char,
+                            NAME_CHAR=tmp_dir.name_char,
+                            TYPE_CHAR=type_str,
+                            SIZE_FLOAT=size_float,
+                            OWNER_CHAR=owner,
+                            LOCATION_CHAR=tmp_dir.origin_path_char.replace(tmp_dir.name_char, ''),
+                            STATE_INT=state_int
+                        )
+                        new_private_dto.save()
+
+            # dirs = self.schema.objects.get(location_char=column.path_char)
+            # dir_list = []
+            # for dir_info in dirs:
+            #     dir_list.append(dir_info)
+            #
+            # while len(dir_list) > 0:
+            #     list_size = len(dir_list)
+            #     for i in range(list_size):
+            #         dir_info = dir_list.pop(0)  # root folder
+            #
+            #         tmp_path = dir_info.PATH_CHAR
+            #         origin_path = dir_info.ORIGIN_PATH_CHAR
+            #
+            #         uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
+            #         path_str = origin_path
+            #         name_str = dir_info.NAME_CHAR
+            #
+            #         location_str = origin_path.replace(name_str, '')
+            #
+            #         if dir_info.TYPE_CHAR == 'dir':
+            #             dir_list.append(dir_info)
+            #             tmp_dir_list = self.schema.objects.get(location_char=dir_info.PATH_CHAR)
+            #             for tmp_dir in tmp_dir_list:
+            #                 dir_list.append(tmp_dir)
+            #
+            #             type_str = 'dir'
+            #             size_float = 0
+            #             state_int = 0
+            #
+            #             if data['type'] == 'public':
+            #                 new_public_dto = FilePublic(
+            #                     UUID_CHAR=uuid_str,
+            #                     PATH_CHAR=path_str,
+            #                     NAME_CHAR=name_str,
+            #                     TYPE_CHAR=type_str,
+            #                     SIZE_FLOAT=size_float,
+            #                     LOCATION_CHAR=location_str,
+            #                     STATE_INT=state_int,
+            #                     DELETE_STATUS_INT=0
+            #                 )
+            #                 new_public_dto.save()
+            #             else:
+            #                 owner = dir_info.OWNER_CHAR
+            #                 new_private_dto = FilePrivate(
+            #                     UUID_CHAR=uuid_str,
+            #                     PATH_CHAR=path_str,
+            #                     NAME_CHAR=name_str,
+            #                     TYPE_CHAR=type_str,
+            #                     SIZE_FLOAT=size_float,
+            #                     OWNER_CHAR=owner,
+            #                     LOCATION_CHAR=location_str,
+            #                     STATE_INT=state_int,
+            #                     DELETE_STATUS_INT=0
+            #                 )
+            #                 new_private_dto.save()
+            #         else:
+            #             type_str = dir_info.TYPE_CHAR
+            #             size_float = dir_info.size_float
+            #             state_int = 0
+            #
+            #             if data['type'] == 'public':
+            #                 new_public_dto = FilePublic(
+            #                     UUID_CHAR=uuid_str,
+            #                     PATH_CHAR=path_str,
+            #                     # origin_path_char=origin_path,
+            #                     NAME_CHAR=name_str,
+            #                     TYPE_CHAR=type_str,
+            #                     SIZE_FLOAT=size_float,
+            #                     LOCATION_CHAR=location_str,
+            #                     STATE_INT=state_int
+            #                 )
+            #                 new_public_dto.save()
+            #             else:
+            #                 owner = dir_info.OWNER_CHAR
+            #                 new_private_dto = FilePrivate(
+            #                     UUID_CHAR=uuid_str,
+            #                     PATH_CHAR=path_str,
+            #                     # origin_path_char=origin_path,
+            #                     NAME_CHAR=name_str,
+            #                     TYPE_CHAR=type_str,
+            #                     SIZE_FLOAT=size_float,
+            #                     OWNER_CHAR=owner,
+            #                     LOCATION_CHAR=location_str,
+            #                     STATE_INT=state_int
+            #                 )
+            #                 new_private_dto.save()
         else:
             tmp_path = column.path_char
             origin_path = column.origin_path_char
@@ -311,10 +371,6 @@ class DBConnection:
             name_str = column.name_char
 
             location_str = origin_path.replace(name_str, '')
-            # location_str = ''
-            # tmp_locations = origin_path.slite(under_bar)
-            # for point in range(len(tmp_locations) - 1):
-            #     location_str += tmp_locations[point] + under_bar
             type_str = column.type_char
             size_float = column.size_float
             state_int = 0
