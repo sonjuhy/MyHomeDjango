@@ -167,7 +167,7 @@ class DBConnection:
                     file_info.delete()
         else:
             tmp_path = data['destination']+column.NAME_CHAR
-            origin_path = tmp_path.replace(under_bar, os.path.sep)
+            origin_path = column.PATH_CHAR
 
             uuid_str = uuid.uuid3(uuid.NAMESPACE_DNS, tmp_path)
             path_str = tmp_path
