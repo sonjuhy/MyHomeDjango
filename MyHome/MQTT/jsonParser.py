@@ -37,6 +37,11 @@ def json_parser_from_else(msg):  # payload to dictionary from else(android or se
     return dic
 
 
+def json_parser_from_job(msg):
+    json_object = json.loads(msg)
+    dic = {'pk': json_object['pk'], 'activation': json_object['activation']}
+    return dic
+
 # def JSON_ENCODE_TOSERVER(dic):  # dictionary to payload for send to server
 #     object = {"Light": {"sender": dic[0][1], "message": dic[1][1], "room": dic[2][1], "destination": dic[3][1]}}
 #     jsonObject = json.dumps(object)

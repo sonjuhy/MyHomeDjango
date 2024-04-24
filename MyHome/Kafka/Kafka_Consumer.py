@@ -10,6 +10,8 @@ from MyHome.Kafka.lightReserve import job
 from MyHome.MQTT import jsonParser
 from MyHome.MQTT import publisher
 
+from ..Kafka.lightReserve.lightDB import set_reserve_result
+
 
 class KafkaConsumerDefault:
 
@@ -77,6 +79,11 @@ class KafkaConsumerDefault:
                     main_scheduler = MainScheduler()
                     scheduler = main_scheduler.get_scheduler()
                     job.job_refresh(scheduler)
+                elif topic == 'reserve-update':
+                    json_object = jsonParser.json_parser_from_job(value)
+                    reserve_pk = json_object['pk']
+                    activation = json_object['activation']
+                    set_reserve_result(pk=reserve_pk, activation=activation)
 
 
 def kafka_cloud_producer(msg):
