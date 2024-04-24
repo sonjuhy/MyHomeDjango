@@ -68,7 +68,7 @@ def job_running(msg, reserve):
         reserve_topic = 'reserve-update'
         import json
         value = json.dumps({'pk': reserve_pk, 'activation': activation})
-        pub(reserve_topic, value)
+        producer.send(topic=reserve_topic, value=value)
 
         # from .lightDB import set_reserve_result
         # set_reserve_result(pk=reserve_pk, activation=activation)
