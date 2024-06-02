@@ -1,11 +1,11 @@
 from json import dumps
 from kafka import KafkaProducer
-
+from .KafkaEnum import KafkaEnum as kafkaEnum
 
 producer = KafkaProducer(
     acks=1,
     compression_type='gzip',
-    bootstrap_servers=['192.168.0.254:9092'],
+    bootstrap_servers=["192.168.0.254:9092"],
     value_serializer=lambda x: dumps(x).encode('utf-8')
 )
 kafka_data = {
@@ -16,11 +16,11 @@ kafka_data = {
     'content': 'msg_content'
 }
 kafka_topic = {
-    'cloud': 'cloud-log-topic',
-    'cloud_check': 'cloud-check-log',
-    'iot': 'iot-log-topic',
-    'reserve': 'reserve-log-topic',
-    'weather': 'weather-log-topic'
+    'cloud': kafkaEnum.TOPIC_LOG_CLOUD,
+    'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK,
+    'iot': kafkaEnum.TOPIC_LOG_IOT,
+    'reserve': kafkaEnum.TOPIC_LOG_RESERVE,
+    'weather': kafkaEnum.TOPIC_LOG_WEATHER
 }
 
 

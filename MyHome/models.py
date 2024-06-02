@@ -11,6 +11,8 @@ class RoomLight(models.Model):
     CATEGORY_CHAR = models.CharField(max_length=100)
     CONNECT_CHAR = models.CharField(max_length=25)
 
+    # objects = models.Manager()
+
     class Meta:
         managed = False
         db_table = 'LIGHT_ROOM_TB'
@@ -35,6 +37,7 @@ class Reserve(models.Model):
                                         null=True)  # Field name made lowercase.
     HOLIDAY_TINYINT = models.IntegerField(db_column='HOLIDAY_TINYINT', blank=True,
                                           null=True)  # Field name made lowercase.
+    # objects = models.Manager()
 
     class Meta:
         managed = False
@@ -49,6 +52,8 @@ class LightRecord(models.Model):
     DO_CHAR = models.CharField(max_length=16)
     USER_CHAR = models.CharField(max_length=128)
 
+    # objects = models.Manager()
+
     class Meta:
         managed = False
         db_table = 'LIGHT_RECORD_TB'
@@ -59,6 +64,8 @@ class FileDefaultPathTb(models.Model):
     path_name = models.CharField(db_column='PATH_NAME', max_length=45, blank=True, null=True)  # Field name made lowercase.
     public_default_path_char = models.CharField(db_column='PUBLIC_DEFAULT_PATH_CHAR', max_length=200, blank=True, null=True)  # Field name made lowercase.
     private_default_path_char = models.CharField(db_column='PRIVATE_DEFAULT_PATH_CHAR', max_length=200, blank=True, null=True)  # Field name made lowercase.
+
+    # objects = models.Manager()
 
     class Meta:
         managed = False
@@ -84,6 +91,8 @@ class FilePrivate(models.Model):
     DELETE_STATUS_INT = models.IntegerField(db_column='DELETE_STATUS_INT', blank=True,
                                             null=True)  # Field name made lowercase.
 
+    # objects = models.Manager()
+
     class Meta:
         managed = False
         db_table = 'FILE_PRIVATE_TB'
@@ -100,6 +109,8 @@ class FilePrivateTrashTb(models.Model):
     owner_char = models.CharField(db_column='OWNER_CHAR', max_length=45, blank=True, null=True)  # Field name made lowercase.
     location_char = models.CharField(db_column='LOCATION_CHAR', max_length=200, blank=True, null=True)  # Field name made lowercase.
     state_int = models.IntegerField(db_column='STATE_INT', blank=True, null=True)  # Field name made lowercase.
+
+    # objects = models.Manager()
 
     class Meta:
         managed = False
@@ -118,6 +129,8 @@ class FilePublic(models.Model):
     STATE_INT = models.IntegerField(db_column='STATE_INT', blank=True, null=True)  # Field name made lowercase.
     DELETE_STATUS_INT = models.IntegerField(db_column='DELETE_STATUS_INT', blank=True,
                                             null=True)  # Field name made lowercase.
+
+    # objects = models.Manager()
 
     class Meta:
         managed = False
@@ -140,6 +153,8 @@ class FilePublicTrashTb(models.Model):
     location_char = models.CharField(db_column='LOCATION_CHAR', max_length=200, blank=True,
                                      null=True)  # Field name made lowercase.
     state_int = models.IntegerField(db_column='STATE_INT', blank=True, null=True)  # Field name made lowercase.
+
+    # objects = models.Manager()
 
     class Meta:
         managed = False

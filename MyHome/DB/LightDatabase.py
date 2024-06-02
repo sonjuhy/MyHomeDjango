@@ -7,7 +7,7 @@ def get_all_reserve_list():
 
 
 def set_reserve_result(pk, activation):
-    Reserve.objects.filter(LIGHT_RESERVE_PK=pk).update(ACTIVATED_CHAR=activation)
+    Reserve.objects.update(ACTIVATED_CHAR=activation)
 
 
 def get_all_light_list():

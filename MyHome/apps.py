@@ -2,7 +2,8 @@ import os
 
 from django.apps import AppConfig
 from django.conf import settings
-
+from MyHome.Kafka.KafkaEnum import KafkaEnum as kafkaEnum
+from MyHome.Kafka.KafkaConsumer import run
 
 class MyhomeConfig(AppConfig):
     # default_auto_field = 'django.db.models.BigAutoField'
@@ -12,7 +13,6 @@ class MyhomeConfig(AppConfig):
         super().ready()
         if os.environ.get('RUN_main', None) != 'true':
             from .MQTT import subscribe
-            from .Kafka.Kafka_Consumer import KafkaConsumerDefault
             mqtt_android = subscribe.Subscribe()
             mqtt_android.connection(topic='server')
 
@@ -20,14 +20,14 @@ class MyhomeConfig(AppConfig):
             mqtt_switch.connection(topic='switch')
 
             # Kafka_Consumer_default().run('iot-topic')
-            iot_kafka = KafkaConsumerDefault()
-            iot_kafka.run('iot-topic')
+            # iot_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_IOT)
 
-            cloud_kafka = KafkaConsumerDefault()
-            cloud_kafka.run('cloud-topic')
+            # cloud_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_CLOUD)
 
-            reserve_kafka = KafkaConsumerDefault()
-            reserve_kafka.run('reserve-topic')
+            # reserve_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_RESERVE)
 
             if settings.SCHEDULER_DEFAULT:
                 from .Schedule import operator
