@@ -4,8 +4,9 @@ import traceback
 
 from django.db import transaction
 
-from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
-import MyHome.File.fileDBConnection as fileDB
+from MyHome.Kafka.KafkaProducer import producer, get_kafka_data, kafka_topic
+from MyHome.DB.DatabaseEnum import File as modeFileEnum
+import MyHome.DB.FileDatabaseConnection as fileDB
 
 
 def get_default_public_path():
@@ -89,25 +90,25 @@ def file_move(uuid, file, path, action):  # file : file path, path : location to
             if action == 'delete':  # move to trash folder
                 if mode:  # public folder
                     data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path.replace(name, '')}
-                    db_conn.main_query('deletePublic', data)
+                    db_conn.main_query(modeFileEnum.DELETE_PUBLIC.value, data)
                 else:
                     data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path.replace(name, '')}
-                    db_conn.main_query('deletePrivate', data)
+                    db_conn.main_query(modeFileEnum.DELETE_PRIVATE.value, data)
             elif action == 'restore':  # restore file from trash folder
                 if mode:
                     data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path.replace(name, '')}
-                    db_conn.main_query('restorePublic', data)
+                    db_conn.main_query(modeFileEnum.RESTORE_PUBLIC.value, data)
                     path = path.replace('trash', 'public')
                 else:
                     data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path.replace(name, '')}
-                    db_conn.main_query('restorePrivate', data)
+                    db_conn.main_query(modeFileEnum.RESTORE_PRIVATE.value, data)
                     path = path.replace('trash', '')
             else:  # move to path
                 data = {'uuid': uuid, 'path': file, 'destination': path.replace(name, '')}
                 if mode:
-                    db_conn.main_query('movePublic', data)
+                    db_conn.main_query(modeFileEnum.MOVE_PUBLIC.value, data)
                 else:
-                    db_conn.main_query('movePrivate', data)
+                    db_conn.main_query(modeFileEnum.MOVE_PRIVATE.value, data)
 
             shutil.move(origin_path, origin_location + name)  # move file
             kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
@@ -130,7 +131,7 @@ def file_delete(uuid, file):
             if os.path.exists(origin_path):
                 data = {'uuid': uuid, 'type': ''}
                 db_conn = fileDB.DBConnection()
-                db_conn.main_query('delete', data)
+                db_conn.main_query(modeFileEnum.DELETE_COMMUNAL.value, data)
 
                 os.remove(origin_path)
                 kafka_msg = '[file_delete] file delete uuid : {uuid}, file : {file}'.format(uuid=uuid, file=file)

@@ -1,11 +1,13 @@
 import time
 import traceback
-from datetime import datetime
+import json
 
 from apscheduler.triggers.cron import CronTrigger
 
 from MyHome.MQTT.publisher import pub
-from MyHome.Kafka.Kafka_Producer import producer, get_kafka_data, kafka_topic
+from MyHome.MQTT.MqttEnum import MQTTEnum as mqttEnum
+from MyHome.Kafka.KafkaProducer import producer, get_kafka_data, kafka_topic
+from MyHome.Kafka.KafkaEnum import KafkaEnum as kafkaEnum
 
 day_to_num = {
     '월': 0,
@@ -54,7 +56,7 @@ def job_refresh(scheduler):
 
 def job_running(msg, reserve):
     try:
-        topic = 'MyHome/Light/Pub/Server'
+        topic = mqttEnum.TOPIC_PUB_SERVER.value
         pub(topic, msg)
         kafka_msg = '[job_running] send pub topic : ' + topic + ', msg : ' + msg + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
@@ -65,15 +67,14 @@ def job_running(msg, reserve):
         if reserve.ACTIVATED_CHAR == 'False':
             activation = 'True'
 
-        reserve_topic = 'reserve-update'
-        import json
+        reserve_topic = kafkaEnum.TOPIC_RESERVE_UPDATE.value
         value = json.dumps({'pk': reserve_pk, 'activation': activation})
         producer.send(topic=reserve_topic, value=value)
 
         # from .lightDB import set_reserve_result
         # set_reserve_result(pk=reserve_pk, activation=activation)
     except Exception as e:
-        kafka_msg = '[job_running] error mstwg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime(
+        kafka_msg = '[job_running] error msg : {}'.format(traceback.format_exc()) + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(False, 'reserve', kafka_msg))
         print(kafka_msg)
@@ -87,7 +88,7 @@ def job_clear(sche):
 
 
 def get_reserves():
-    from .lightDB import get_all_reserve_list, get_light_by_name
+    from MyHome.DB.LightDatabase import get_all_reserve_list, get_light_by_name
     reserve_list = get_all_reserve_list()  # get all reserve data
 
     reserve_job_list = []
