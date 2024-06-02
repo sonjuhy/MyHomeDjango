@@ -33,21 +33,21 @@ def select(table):
 
 
 def main(mode, data):
-    if mode == modeEnum.UPDATE_LIGHT:
+    if mode == modeEnum.UPDATE_LIGHT.value:
         if data['message'] == 'On' or data['message'] == 'Off':
             update('control', data['room'], 'State', data['message'])
-    elif mode == modeEnum.UPDATE_CONN_STATUS:
+    elif mode == modeEnum.UPDATE_CONN_STATUS.value:
         update('control', data['room'], 'Connect', data)  # need to compare data content
-    elif mode == modeEnum.GET_LIGHT_LIST:
+    elif mode == modeEnum.GET_LIGHT_LIST.value:
         return select('Room')
-    elif mode == modeEnum.SAVE_LIGHT_RECORD:
+    elif mode == modeEnum.SAVE_LIGHT_RECORD.value:
         now = datetime.now()
         date = str(now.year) + '-' + str(now.month) + '-' + str(now.day)
         hour = str(now.hour) + ':' + str(now.minute)
         insert(hour, data['room'], data['message'], date, data['sender'])
-    elif mode == modeEnum.GET_RESERVE_LIST:
+    elif mode == modeEnum.GET_RESERVE_LIST.value:
         return select('Reserve')
-    elif mode == modeEnum.UPDATE_RESERVE:
+    elif mode == modeEnum.UPDATE_RESERVE.value:
         update('reserve', data[0][1], 'Do', data[1][1])
-    elif mode == modeEnum.UPDATE_RESERVE_ACTIVATE:
+    elif mode == modeEnum.UPDATE_RESERVE_ACTIVATE.value:
         update('reserve', data[0][1], 'Activated', data[1][1])

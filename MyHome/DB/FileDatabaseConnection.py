@@ -14,38 +14,38 @@ class DBConnection:
         self.dir_type = 'dir'
 
     def main_query(self, mode, data):
-        if mode == modeEnum.MOVE_PUBLIC:
+        if mode == modeEnum.MOVE_PUBLIC.value:
             self.schema = FilePublic
             self.move_query(data)
 
-        elif mode == modeEnum.RESTORE_PUBLIC:
+        elif mode == modeEnum.RESTORE_PUBLIC.value:
             self.schema = FilePublicTrashTb
             self.restore_from_trash_query(data)
 
-        elif mode == modeEnum.DELETE_PUBLIC:
+        elif mode == modeEnum.DELETE_PUBLIC.value:
             self.schema = FilePublic
             self.remove_to_trash_query(data)
 
-        elif mode == modeEnum.MOVE_PRIVATE:
+        elif mode == modeEnum.MOVE_PRIVATE.value:
             self.schema = FilePrivate
             self.move_query(data)
 
-        elif mode == modeEnum.RESTORE_PRIVATE:
+        elif mode == modeEnum.RESTORE_PRIVATE.value:
             self.schema = FilePrivateTrashTb
             self.restore_from_trash_query(data)
 
-        elif mode == modeEnum.DELETE_PRIVATE:
+        elif mode == modeEnum.DELETE_PRIVATE.value:
             self.schema = FilePrivate
             self.remove_to_trash_query(data)
 
-        elif mode == modeEnum.DELETE_COMMUNAL:  # uuid, type(public,private)
+        elif mode == modeEnum.DELETE_COMMUNAL.value:  # uuid, type(public,private)
             if data[dataType.TYPE] == self.private_type:
                 self.schema = FilePrivate
             else:
                 self.schema = FilePublic
             self.delete_query(data[dataType.UUID])
 
-        elif mode == modeEnum.GET_DEFAULT_PATH:
+        elif mode == modeEnum.GET_DEFAULT_PATH.value:
             self.schema = FileDefaultPathTb
             return self.get_default_path(mode=data)
 

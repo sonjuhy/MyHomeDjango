@@ -56,7 +56,7 @@ def job_refresh(scheduler):
 
 def job_running(msg, reserve):
     try:
-        topic = str(mqttEnum.TOPIC_PUB_SERVER)
+        topic = mqttEnum.TOPIC_PUB_SERVER.value
         pub(topic, msg)
         kafka_msg = '[job_running] send pub topic : ' + topic + ', msg : ' + msg + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
@@ -67,7 +67,7 @@ def job_running(msg, reserve):
         if reserve.ACTIVATED_CHAR == 'False':
             activation = 'True'
 
-        reserve_topic = kafkaEnum.TOPIC_RESERVE_UPDATE
+        reserve_topic = kafkaEnum.TOPIC_RESERVE_UPDATE.value
         value = json.dumps({'pk': reserve_pk, 'activation': activation})
         producer.send(topic=reserve_topic, value=value)
 

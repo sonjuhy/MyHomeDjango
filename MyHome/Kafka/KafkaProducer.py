@@ -16,11 +16,11 @@ kafka_data = {
     'content': 'msg_content'
 }
 kafka_topic = {
-    'cloud': kafkaEnum.TOPIC_LOG_CLOUD,
-    'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK,
-    'iot': kafkaEnum.TOPIC_LOG_IOT,
-    'reserve': kafkaEnum.TOPIC_LOG_RESERVE,
-    'weather': kafkaEnum.TOPIC_LOG_WEATHER
+    'cloud': kafkaEnum.TOPIC_LOG_CLOUD.value,
+    'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK.value,
+    'iot': kafkaEnum.TOPIC_LOG_IOT.value,
+    'reserve': kafkaEnum.TOPIC_LOG_RESERVE.value,
+    'weather': kafkaEnum.TOPIC_LOG_WEATHER.value
 }
 
 

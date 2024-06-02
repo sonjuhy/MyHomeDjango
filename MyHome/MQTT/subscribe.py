@@ -21,9 +21,9 @@ class Subscribe:
                      'living Room2': 'Off', 'living Room3': 'Off', 'middle Room1': 'Off'
             , 'middle Room2': 'Off', 'small Room': 'Off'}
 
-        self.topic_to_server = mqttEnum.TOPIC_PUB_SERVER
-        self.topic_from_switch = mqttEnum.TOPIC_SUB_SWITCH
-        self.server_host = mqttEnum.SERVER_IP
+        self.topic_to_server = mqttEnum.TOPIC_PUB_SERVER.value
+        self.topic_from_switch = mqttEnum.TOPIC_SUB_SWITCH.value
+        self.server_host = mqttEnum.SERVER_IP.value
         self.selected_topic = ''
         self.client = mqtt.Client()
         self.database_conn = dbConn
@@ -37,7 +37,7 @@ class Subscribe:
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.connect_async(self.server_host, mqttEnum.SERVER_PORT)
+        self.client.connect_async(host=self.server_host, port=mqttEnum.SERVER_PORT.value)
         self.client.loop_start()
 
     def on_connect(self, client, user_data, flags, rc):
@@ -57,7 +57,7 @@ class Subscribe:
                         msg_to_switch = jsonParser.json_encode_to_switch(dic_from_payload)
                     else:
                         msg_to_switch = payload
-                    publisher.pub(str(mqttEnum.TOPIC_PUB_DEFAULT) + dic_from_payload['room'], msg_to_switch)
+                    publisher.pub(mqttEnum.TOPIC_PUB_DEFAULT.value + dic_from_payload['room'], msg_to_switch)
 
                     print('msgToSwitch : {}'.format(msg_to_switch))
                     kafka_msg = '[on_message] selected == server topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -69,13 +69,13 @@ class Subscribe:
                 if msg_diction['sender'] == 'Server':  # switch connection checking
                     if msg_diction['room'] in self.Room:
                         db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': 'On'}
-                        self.database_conn.main(dbDefaultEnum.UPDATE_CONN_STATUS, db_diction)
+                        self.database_conn.main(dbDefaultEnum.UPDATE_CONN_STATUS.value, db_diction)
                 else:  # send msg to android
-                    self.database_conn.main(dbDefaultEnum.SAVE_LIGHT_RECORD, msg_diction)
-                    self.database_conn.main(dbDefaultEnum.UPDATE_LIGHT, msg_diction)
+                    self.database_conn.main(dbDefaultEnum.SAVE_LIGHT_RECORD.value, msg_diction)
+                    self.database_conn.main(dbDefaultEnum.UPDATE_LIGHT.value, msg_diction)
 
                     msg_to_android = jsonParser.json_encode_to_android(msg_diction)
-                    publisher.pub(mqttEnum.TOPIC_PUB_RESULT, msg_to_android)
+                    publisher.pub(mqttEnum.TOPIC_PUB_RESULT.value, msg_to_android)
 
                     print('msgToAndroid : {}'.format(msg_to_android))
                     kafka_msg = '[on_message] from switch, to android topic : {topic}, msg : {msg}, time : {time}'.format(

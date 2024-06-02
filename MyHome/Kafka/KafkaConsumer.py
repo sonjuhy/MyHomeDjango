@@ -18,10 +18,10 @@ from .KafkaEnum import KafkaEnum as kafkaEnum
 
 
 def listen(topic):
-    print('Starting listening {}'.format(topic))
+    print('Starting listening {topic}, server ip : {ip}'.format(topic=topic, ip=kafkaEnum.SERVER_IP.value))
     consumer = KafkaConsumer(
         topic,
-        bootstrap_servers=[kafkaEnum.SERVER_IP],
+        bootstrap_servers=[kafkaEnum.SERVER_IP.value],
         auto_offset_reset='earliest',
         enable_auto_commit=True,
         group_id='django-kafka',
@@ -37,14 +37,14 @@ def listen(topic):
                                                                                   message.offset, message.key,
                                                                                   message.value.decode('utf-8')))
             value = message.value.decode('utf-8')
-            if topic == kafkaEnum.TOPIC_IOT:
+            if topic == kafkaEnum.TOPIC_IOT.value:
                 if json.loads(value):
                     parsing_data = jsonParser.json_parser_from_else(value)
-                    publisher.pub(str(mqttEnum.TOPIC_PUB_DEFAULT) + parsing_data['room'], value)
+                    publisher.pub(mqttEnum.TOPIC_PUB_DEFAULT.value + parsing_data['room'], value)
                     print('parsing_data on Kafka: %s' % value)
                 else:
                     print('value is not JSON')
-            elif topic == kafkaEnum.TOPIC_CLOUD:
+            elif topic == kafkaEnum.TOPIC_CLOUD.value:
                 json_object = fileJSON.json_parsing(value)
                 if json_object['purpose'] == 'move':
                     result = fileMove.file_move(uuid=json_object['uuid'], file=json_object['file'],
@@ -64,7 +64,7 @@ def listen(topic):
                     result_msg = 'success'
                 # tmp_json = {'message': 'no', 'result': result_msg}
                 # kafka_cloud_producer(fileJSON.json_encoding(result_msg))
-            elif topic == kafkaEnum.TOPIC_RESERVE:
+            elif topic == kafkaEnum.TOPIC_RESERVE.value:
                 print('reserve topic refresh job schedule')
                 # from apscheduler.schedulers.background import BackgroundScheduler
                 # scheduler = BackgroundScheduler()
@@ -72,7 +72,7 @@ def listen(topic):
                 main_scheduler = MainScheduler()
                 scheduler = main_scheduler.get_scheduler()
                 job.job_refresh(scheduler)
-            elif topic == kafkaEnum.TOPIC_RESERVE_UPDATE:
+            elif topic == kafkaEnum.TOPIC_RESERVE_UPDATE.value:
                 json_object = jsonParser.json_parser_from_job(value)
                 reserve_pk = json_object['pk']
                 activation = json_object['activation']
@@ -90,13 +90,13 @@ def kafka_cloud_producer(msg):
     producer = KafkaProducer(
         acks=1,
         compression_type='gzip',
-        bootstrap_servers=[kafkaEnum.SERVER_IP],
+        bootstrap_servers=[kafkaEnum.SERVER_IP.value],
         value_serializer=lambda x: dumps(x).encode('utf-8')
     )
 
     try:
         data = {'messages': msg}
-        response = producer.send(str(kafkaEnum.TOPIC_CLOUD), value=data).get()
+        response = producer.send(kafkaEnum.TOPIC_CLOUD.value, value=data).get()
         producer.flush()
         print(response)
     except:
