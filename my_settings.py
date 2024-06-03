@@ -1,11 +1,17 @@
+import os
+from dotenv import load_dotenv
+
+# load .local_env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '.local_env'))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'HomeUpdate',
-        'USER': 'sonjuhy_home',
-        'PASSWORD': 'son278298@',
-        'HOST': '192.168.0.254',
-        'PORT': '3306',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT'),
     }
 }
-SECRET_KEY = 'django-insecure-69z-m&p4ivr34b4x#0*l+#=*0jq$p^23=416tsy9xjlh7oz3&s'
+SECRET_KEY = os.getenv('SECRET_KEY')

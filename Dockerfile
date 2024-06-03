@@ -13,6 +13,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code to the container
 COPY . .
 
+ARG DATABASE_PASSWORD
+ARG DATABASE_USER
+ARG DATABASE_NAME
+ENV DATABASE_PASSWORD=$DATABASE_PASSWORD
+ENV DATABASE_USER=$DATABASE_USER
+ENV DATABASE_NAME=$DATABASE_NAME
+
+
 # Run the application on the poart 8000
 EXPOSE 8000
 
