@@ -12,22 +12,23 @@ class MyhomeConfig(AppConfig):
         super().ready()
         if os.environ.get('RUN_main', None) != 'true':
             from .MQTT import subscribe
-            from .Kafka.Kafka_Consumer import KafkaConsumerDefault
+            from MyHome.Kafka.KafkaEnum import KafkaEnum as kafkaEnum
+            from MyHome.Kafka.KafkaConsumer import run
             mqtt_android = subscribe.Subscribe()
-            mqtt_android.connection(topic='android')
+            mqtt_android.connection(topic='server')
 
             mqtt_switch = subscribe.Subscribe()
             mqtt_switch.connection(topic='switch')
 
             # Kafka_Consumer_default().run('iot-topic')
-            iot_kafka = KafkaConsumerDefault()
-            iot_kafka.run('iot-topic')
+            # iot_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_IOT.value)
 
-            cloud_kafka = KafkaConsumerDefault()
-            cloud_kafka.run('cloud-topic')
+            # cloud_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_CLOUD.value)
 
-            reserve_kafka = KafkaConsumerDefault()
-            reserve_kafka.run('reserve-topic')
+            # reserve_kafka = KafkaConsumerDefault()
+            run(topic=kafkaEnum.TOPIC_RESERVE.value)
 
             if settings.SCHEDULER_DEFAULT:
                 from .Schedule import operator

@@ -121,8 +121,7 @@ STATIC_URL = '/static/'
 
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#Scheduler settings
-
+# Scheduler settings
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
-
+APSCHEDULER_RUN_NOW_TIMEOUT = 60
 SCHEDULER_DEFAULT = True
