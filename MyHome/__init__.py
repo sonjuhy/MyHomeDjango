@@ -1,5 +1,5 @@
 # from .MQTT import subscribe
-# from .Kafka.Kafka_Consumer import KafkaConsumerDefault
+# from .kafka.Kafka_Consumer import KafkaConsumerDefault
 #
 # mqttAndroid = subscribe.Subscribe()
 # mqttAndroid.connection(topic='android')

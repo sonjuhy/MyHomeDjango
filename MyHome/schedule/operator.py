@@ -1,8 +1,8 @@
-from MyHome.Kafka.lightReserve import job
+from MyHome.kafka.light_reserve import job
 
 
-def start():
-    from .MainScheduler import MainScheduler
+def scheduler_start():
+    from .main_scheduler import MainScheduler
     main_scheduler = MainScheduler()
     scheduler = main_scheduler.get_scheduler()
 
@@ -14,8 +14,6 @@ def start():
             scheduler.start()
 
     if scheduler.state == 0:
-        print('scheduler start')
         scheduler.start()
         job.job_refresh(scheduler)
-    print('operator scheduler start')
 
