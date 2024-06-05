@@ -5,9 +5,9 @@ import json
 from apscheduler.triggers.cron import CronTrigger
 
 from MyHome.MQTT.publisher import pub
-from MyHome.MQTT.MqttEnum import MQTTEnum as mqttEnum
-from MyHome.Kafka.KafkaProducer import producer, get_kafka_data, kafka_topic
-from MyHome.Kafka.KafkaEnum import KafkaEnum as kafkaEnum
+from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
+from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
+from MyHome.kafka.kafka_enum import KafkaEnum as kafkaEnum
 
 day_to_num = {
     '월': 0,
@@ -20,7 +20,7 @@ day_to_num = {
 }
 
 
-def job_refresh(scheduler):
+def job_refresh(scheduler) -> None:
     try:
         if len(scheduler.get_jobs()) > 0:
             job_clear(scheduler)
@@ -54,10 +54,10 @@ def job_refresh(scheduler):
         print(kafka_msg)
 
 
-def job_running(msg, reserve):
+def job_running(msg, reserve) -> None:
     try:
         topic = mqttEnum.TOPIC_PUB_SERVER.value
-        pub(topic, msg)
+        pub(topic=topic, msg=msg)
         kafka_msg = '[job_running] send pub topic : ' + topic + ', msg : ' + msg + ', time : ' + time.strftime(
             '%Y-%m-%d %H:%M:%S')
         producer.send(topic=kafka_topic['reserve'], value=get_kafka_data(True, 'reserve', kafka_msg))
@@ -80,15 +80,15 @@ def job_running(msg, reserve):
         print(kafka_msg)
 
 
-def job_clear(sche):
+def job_clear(sche) -> None:
     for tmp_job in sche.get_jobs():
         if tmp_job.id != 'iot_reserve_check':
             sche.remove_job(tmp_job.id)
     # sche.remove_all_jobs()
 
 
-def get_reserves():
-    from MyHome.DB.LightDatabase import get_all_reserve_list, get_light_by_name
+def get_reserves() -> list:
+    from MyHome.db.light_database import get_all_reserve_list, get_light_by_name
     reserve_list = get_all_reserve_list()  # get all reserve data
 
     reserve_job_list = []
@@ -157,10 +157,10 @@ def get_reserves():
     return reserve_job_list
 
 
-def set_msg(message, destination, room):
+def set_msg(message, destination, room) -> str:
     # if change all refresh -> refresh some data, get data from kafka and make msg & return msg
     # msg sample : {"Light":{"sender":"Server","message":"OFF","destination":"living Room1","room":"living Room"}}
     tmp_dic = {'sender': 'ServerReserveDjango', 'message': message, 'destination': destination, 'room': room}
-    from MyHome.MQTT.jsonParser import json_encode_to_server
+    from MyHome.MQTT.mqtt_json_parser import json_encode_to_server
     msg = json_encode_to_server(tmp_dic)
     return msg

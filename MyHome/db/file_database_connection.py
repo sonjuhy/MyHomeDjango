@@ -1,8 +1,8 @@
 import uuid
 
 from django.db.models.functions import Length
-from .DatabaseEnum import File as modeEnum
-from .DatabaseEnum import FileDataType as dataType
+from .database_enum import File as modeEnum
+from .database_enum import FileDataType as dataType
 from MyHome.models import FilePrivate, FilePublic, FilePublicTrashTb, FilePrivateTrashTb, FileDefaultPathTb
 
 
@@ -13,7 +13,7 @@ class DBConnection:
         self.private_type = 'private'
         self.dir_type = 'dir'
 
-    def main_query(self, mode, data):
+    def main_query(self, mode: str, data: any) -> list:
         if mode == modeEnum.MOVE_PUBLIC.value:
             self.schema = FilePublic
             self.move_query(data)
@@ -48,8 +48,9 @@ class DBConnection:
         elif mode == modeEnum.GET_DEFAULT_PATH.value:
             self.schema = FileDefaultPathTb
             return self.get_default_path(mode=data)
+        return []
 
-    def get_default_path(self, mode):
+    def get_default_path(self, mode) -> list:
         store_path = self.schema.objects.get(path_name='store')
         trash_path = self.schema.objects.get(path_name='trash')
         thumbnail_path = self.schema.objects.get(path_name='thumbnail')
@@ -67,7 +68,7 @@ class DBConnection:
             data.append(top_path.public_default_path_char)
         return data
 
-    def remove_to_trash_query(self, data):
+    def remove_to_trash_query(self, data) -> None:
         column = self.schema.objects.get(UUID_CHAR=data[dataType.UUID])
 
         if data[dataType.TYPE] == self.public_type:
@@ -190,7 +191,7 @@ class DBConnection:
                 new_trash_dto.save()
         column.delete()
 
-    def restore_from_trash_query(self, data):
+    def restore_from_trash_query(self, data) -> None:
         column = self.schema.objects.get(uuid_char=data[dataType.UUID])
         if column.type_char == self.dir_type:
             tmp_dirs = (self.schema.objects.filter(origin_path_char__contains=column.origin_path_char)
@@ -297,7 +298,7 @@ class DBConnection:
                 new_private_dto.save()
         column.delete()
 
-    def move_query(self, data):
+    def move_query(self, data) -> None:
         column = self.schema.objects.get(UUID_CHAR=data[dataType.UUID])
         tmp_location = data[dataType.DESTINATION]
         column.PATH_CHAR = data[dataType.DESTINATION] + column.NAME_CHAR
@@ -305,7 +306,7 @@ class DBConnection:
         column.UUID_CHAR = uuid.uuid3(uuid.NAMESPACE_DNS, data['path'])
         column.save()
 
-    def delete_query(self, uuid_str):
+    def delete_query(self, uuid_str) -> None:
         column = self.schema.objects.get(uuid_char=uuid_str)
         if column.type_char == self.dir_type:
             self.schema.objects.filter(path_char__contains=column.path_char).delete()
