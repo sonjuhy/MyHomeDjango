@@ -4,24 +4,56 @@ import traceback
 
 from django.db import transaction
 
-from MyHome.Kafka.KafkaProducer import producer, get_kafka_data, kafka_topic
-from MyHome.DB.DatabaseEnum import File as modeFileEnum
-import MyHome.DB.FileDatabaseConnection as fileDB
+from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
+from MyHome.db.database_enum import File as modeFileEnum
+import MyHome.db.file_database_connection as file_database
 
 
-def get_default_public_path():
-    db_conn = fileDB.DBConnection()
-    default_paths = db_conn.main_query('default', 'public')
+def get_default_public_path() -> list:
+    """
+    return default path of public cloud
+
+    data order
+        [0] : store path.
+        [1] : trash path.
+        [2] : thumbnail path.
+        [3] : top path.
+
+    Returns:
+        4 len of list
+    """
+    db_conn = file_database.DBConnection()
+    default_paths = db_conn.main_query(mode='default', data='public')
     return default_paths
 
 
-def get_default_private_path():
-    db_conn = fileDB.DBConnection()
-    default_paths = db_conn.main_query('default', 'private')
+def get_default_private_path() -> list:
+    """
+        return default path of private cloud
+
+        data order
+            [0] : store path.
+            [1] : trash path.
+            [2] : thumbnail path.
+            [3] : top path.
+
+        Returns:
+            4 len of list
+        """
+    db_conn = file_database.DBConnection()
+    default_paths = db_conn.main_query(mode='default', data='private')
     return default_paths
 
 
-def file_move(uuid, file, path, action):  # file : file path, path : location to move file
+def file_move(uuid: str, file: str, path: str, action: str) -> int:  # file : file path, path : location to move file
+    """
+        return result of move file
+
+        Returns:
+            0 - success.
+            -1 - not exist file.
+            -2 - error while move file or update db.
+        """
     mode = True  # public
     if 'private' in path:
         mode = False  # private
@@ -86,32 +118,32 @@ def file_move(uuid, file, path, action):  # file : file path, path : location to
 
     try:
         with transaction.atomic():
-            db_conn = fileDB.DBConnection()
+            db_conn = file_database.DBConnection()
             if action == 'delete':  # move to trash folder
                 if mode:  # public folder
                     data = {'uuid': uuid, 'type': 'public', 'action': 'remove', 'destination': path.replace(name, '')}
-                    db_conn.main_query(modeFileEnum.DELETE_PUBLIC.value, data)
+                    db_conn.main_query(mode=modeFileEnum.DELETE_PUBLIC.value, data=data)
                 else:
                     data = {'uuid': uuid, 'type': 'private', 'action': 'remove', 'destination': path.replace(name, '')}
-                    db_conn.main_query(modeFileEnum.DELETE_PRIVATE.value, data)
+                    db_conn.main_query(mode=modeFileEnum.DELETE_PRIVATE.value, data=data)
             elif action == 'restore':  # restore file from trash folder
                 if mode:
                     data = {'uuid': uuid, 'type': 'public', 'action': 'restore', 'destination': path.replace(name, '')}
-                    db_conn.main_query(modeFileEnum.RESTORE_PUBLIC.value, data)
+                    db_conn.main_query(mode=modeFileEnum.RESTORE_PUBLIC.value, data=data)
                     path = path.replace('trash', 'public')
                 else:
                     data = {'uuid': uuid, 'type': 'private', 'action': 'restore', 'destination': path.replace(name, '')}
-                    db_conn.main_query(modeFileEnum.RESTORE_PRIVATE.value, data)
+                    db_conn.main_query(mode=modeFileEnum.RESTORE_PRIVATE.value, data=data)
                     path = path.replace('trash', '')
             else:  # move to path
                 data = {'uuid': uuid, 'path': file, 'destination': path.replace(name, '')}
                 if mode:
-                    db_conn.main_query(modeFileEnum.MOVE_PUBLIC.value, data)
+                    db_conn.main_query(mode=modeFileEnum.MOVE_PUBLIC.value, data=data)
                 else:
-                    db_conn.main_query(modeFileEnum.MOVE_PRIVATE.value, data)
+                    db_conn.main_query(mode=modeFileEnum.MOVE_PRIVATE.value, data=data)
 
             shutil.move(origin_path, origin_location + name)  # move file
-            kafka_msg = '[file_move] DB Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
+            kafka_msg = '[file_move] db Update uuid : {uuid}, file : {file}, path : {path}, action : {action}'.format(
                 uuid=uuid, file=file, path=path, action=action)
             producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(True, 'cloud', kafka_msg))
             return 0
@@ -122,7 +154,15 @@ def file_move(uuid, file, path, action):  # file : file path, path : location to
         return -2
 
 
-def file_delete(uuid, file):
+def file_delete(uuid: str, file: str) -> int:
+    """
+        return result of delete file
+
+        Returns:
+            0 - success.
+            -1 - not exist file.
+            -2 - error while move file or update db.
+    """
     try:
         with transaction.atomic():
             under_bar = '__'
@@ -130,8 +170,8 @@ def file_delete(uuid, file):
 
             if os.path.exists(origin_path):
                 data = {'uuid': uuid, 'type': ''}
-                db_conn = fileDB.DBConnection()
-                db_conn.main_query(modeFileEnum.DELETE_COMMUNAL.value, data)
+                db_conn = file_database.DBConnection()
+                db_conn.main_query(mode=modeFileEnum.DELETE_COMMUNAL.value, data=data)
 
                 os.remove(origin_path)
                 kafka_msg = '[file_delete] file delete uuid : {uuid}, file : {file}'.format(uuid=uuid, file=file)
@@ -145,4 +185,4 @@ def file_delete(uuid, file):
         print('file_delete error : {}'.format(e))
         kafka_msg = '[file_delete] msg : {}'.format(e)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
-        return -1
+        return -2

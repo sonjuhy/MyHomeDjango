@@ -1,15 +1,15 @@
 import traceback
 
 import paho.mqtt.client as mqtt
-from . import jsonParser
+from . import mqtt_json_parser
 from . import publisher
 
-from .MqttEnum import MQTTEnum as mqttEnum
+from .mqtt_enum import MQTTEnum as mqttEnum
 import time
 
-from MyHome.Kafka.KafkaProducer import producer, get_kafka_data, kafka_topic
-from ..DB.DatabaseEnum import Default as dbDefaultEnum
-import MyHome.DB.DatabaseConnection as dbConn
+from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
+from ..db.database_enum import Default as dbDefaultEnum
+import MyHome.db.iot_database_connection as db_conn
 
 
 class Subscribe:
@@ -26,9 +26,9 @@ class Subscribe:
         self.server_host = mqttEnum.SERVER_IP.value
         self.selected_topic = ''
         self.client = mqtt.Client()
-        self.database_conn = dbConn
+        self.database_conn = db_conn
 
-    def connection(self, topic):
+    def connection(self, topic: str) -> None:
         if topic == 'server':
             self.selected_topic = self.topic_to_server
         else:
@@ -40,11 +40,10 @@ class Subscribe:
         self.client.connect_async(host=self.server_host, port=mqttEnum.SERVER_PORT.value)
         self.client.loop_start()
 
-    def on_connect(self, client, user_data, flags, rc):
+    def on_connect(self, client, user_data, flags, rc) -> None:
         self.client.subscribe(self.selected_topic)
 
-    def on_message(self, client, user_data, msg):
-        # print('topic : {}, msg : {}'.format(self.selected_topic, msg.payload.decode('utf-8')))
+    def on_message(self, client, user_data, msg) -> None:
         try:
             if self.selected_topic == self.topic_to_server:  # payload from not switch
                 payload = msg.payload.decode('utf-8')
@@ -52,32 +51,30 @@ class Subscribe:
                     # will delete part(for legacy service work)
                     pass
                 else:
-                    dic_from_payload = jsonParser.json_parser_from_else(payload)
+                    dic_from_payload = mqtt_json_parser.json_parser_from_else(msg=payload)
                     if dic_from_payload['sender'] == 'ServerReserveDjango':  # from reserve job
-                        msg_to_switch = jsonParser.json_encode_to_switch(dic_from_payload)
+                        msg_to_switch = mqtt_json_parser.json_encode_to_switch(dic=dic_from_payload)
                     else:
                         msg_to_switch = payload
-                    publisher.pub(mqttEnum.TOPIC_PUB_DEFAULT.value + dic_from_payload['room'], msg_to_switch)
-
-                    print('msgToSwitch : {}'.format(msg_to_switch))
-                    kafka_msg = '[on_message] selected == server topic : {topic}, msg : {msg}, time : {time}'.format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S'))
-                    producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
+                    publisher.pub(topic=mqttEnum.TOPIC_PUB_DEFAULT.value + dic_from_payload['room'], msg=msg_to_switch)
+                    kafka_msg = ('[on_message] selected == server topic : {topic}, msg : {msg}, time : {time}'
+                                 .format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S')))
+                    producer.send(topic=kafka_topic['iot'], value=get_kafka_data(result=True, service='iot', content=kafka_msg))
             else:  # msg from switch or server
                 payload = msg.payload.decode('utf-8')
-                msg_diction = jsonParser.json_parser_from_switch(payload)
+                msg_diction = mqtt_json_parser.json_parser_from_switch(msg=payload)
 
                 if msg_diction['sender'] == 'Server':  # switch connection checking
                     if msg_diction['room'] in self.Room:
                         db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': 'On'}
-                        self.database_conn.main(dbDefaultEnum.UPDATE_CONN_STATUS.value, db_diction)
+                        self.database_conn.main(mode=dbDefaultEnum.UPDATE_CONN_STATUS.value, data=db_diction)
                 else:  # send msg to android
-                    self.database_conn.main(dbDefaultEnum.SAVE_LIGHT_RECORD.value, msg_diction)
-                    self.database_conn.main(dbDefaultEnum.UPDATE_LIGHT.value, msg_diction)
+                    self.database_conn.main(mode=dbDefaultEnum.SAVE_LIGHT_RECORD.value, data=msg_diction)
+                    self.database_conn.main(mode=dbDefaultEnum.UPDATE_LIGHT.value, data=msg_diction)
 
-                    msg_to_android = jsonParser.json_encode_to_android(msg_diction)
-                    publisher.pub(mqttEnum.TOPIC_PUB_RESULT.value, msg_to_android)
+                    msg_to_android = mqtt_json_parser.json_encode_to_android(msg_diction)
+                    publisher.pub(topic=mqttEnum.TOPIC_PUB_RESULT.value, msg=msg_to_android)
 
-                    print('msgToAndroid : {}'.format(msg_to_android))
                     kafka_msg = '[on_message] from switch, to android topic : {topic}, msg : {msg}, time : {time}'.format(
                         topic=self.selected_topic, msg=msg_to_android, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))

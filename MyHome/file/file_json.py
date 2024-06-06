@@ -1,7 +1,7 @@
 import json
 
 
-def json_parsing(msg):
+def json_parsing(msg: str) -> dict:
     try:
         json_object = json.loads(msg)
         dic = {'purpose': json_object['purpose'], 'uuid': json_object['uuid'], 'file': json_object['file'], 'path': json_object['path'], 'action': json_object['action']}
@@ -12,6 +12,6 @@ def json_parsing(msg):
         return dic
 
 
-def json_encoding(result):
+def json_encoding(result: str) -> str:
     json_object = {'result': result}
     return json.dumps(json_object)

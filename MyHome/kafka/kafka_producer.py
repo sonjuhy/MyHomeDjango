@@ -1,6 +1,6 @@
 from json import dumps
 from kafka import KafkaProducer
-from .KafkaEnum import KafkaEnum as kafkaEnum
+from .kafka_enum import KafkaEnum as kafkaEnum
 
 producer = KafkaProducer(
     acks=1,
@@ -8,6 +8,7 @@ producer = KafkaProducer(
     bootstrap_servers=["192.168.0.254:9092"],
     value_serializer=lambda x: dumps(x).encode('utf-8')
 )
+
 kafka_data = {
     'id': 0,
     'type': True,
@@ -15,6 +16,7 @@ kafka_data = {
     'service': 'service_name',
     'content': 'msg_content'
 }
+
 kafka_topic = {
     'cloud': kafkaEnum.TOPIC_LOG_CLOUD.value,
     'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK.value,
@@ -24,17 +26,8 @@ kafka_topic = {
 }
 
 
-def get_kafka_data(result, service, content):
+def get_kafka_data(result, service, content) -> dict:
     kafka_data['type'] = result
     kafka_data['service'] = service
     kafka_data['content'] = content
     return kafka_data
-
-# try:
-#     data={'messages': 'test from django'}
-#     response = producer.send('exam-topic', value=data).get()
-#     producer.flush()
-#     print(response)
-# except:
-#     traceback.print_exc()
-# print('DONE')

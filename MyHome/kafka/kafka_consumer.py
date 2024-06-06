@@ -5,19 +5,19 @@ import traceback
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
-from MyHome.File import fileJSON
-from MyHome.File import fileMove
-from MyHome.Kafka.lightReserve import job
-from MyHome.MQTT import jsonParser
+from MyHome.file import file_json
+from MyHome.file import file_move
+from MyHome.kafka.light_reserve import job
+from MyHome.MQTT import mqtt_json_parser
 from MyHome.MQTT import publisher
 from json import dumps
 
-from MyHome.DB.LightDatabase import set_reserve_result
-from MyHome.MQTT.MqttEnum import MQTTEnum as mqttEnum
-from .KafkaEnum import KafkaEnum as kafkaEnum
+from MyHome.db.light_database import set_reserve_result
+from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
+from .kafka_enum import KafkaEnum as kafkaEnum
 
 
-def listen(topic):
+def listen(topic) -> None:
     print('Starting listening {topic}, server ip : {ip}'.format(topic=topic, ip=kafkaEnum.SERVER_IP.value))
     consumer = KafkaConsumer(
         topic,
@@ -39,18 +39,18 @@ def listen(topic):
             value = message.value.decode('utf-8')
             if topic == kafkaEnum.TOPIC_IOT.value:
                 if json.loads(value):
-                    parsing_data = jsonParser.json_parser_from_else(value)
+                    parsing_data = mqtt_json_parser.json_parser_from_else(msg=value)
                     publisher.pub(mqttEnum.TOPIC_PUB_DEFAULT.value + parsing_data['room'], value)
-                    print('parsing_data on Kafka: %s' % value)
+                    print('parsing_data on kafka: %s' % value)
                 else:
                     print('value is not JSON')
             elif topic == kafkaEnum.TOPIC_CLOUD.value:
-                json_object = fileJSON.json_parsing(value)
+                json_object = file_json.json_parsing(msg=value)
                 if json_object['purpose'] == 'move':
-                    result = fileMove.file_move(uuid=json_object['uuid'], file=json_object['file'],
+                    result = file_move.file_move(uuid=json_object['uuid'], file=json_object['file'],
                                                 path=json_object['path'], action=json_object['action'])
                 elif json_object['purpose'] == 'delete':
-                    result = fileMove.file_delete(uuid=json_object['uuid'], file=json_object['file'])
+                    result = file_move.file_delete(uuid=json_object['uuid'], file=json_object['file'])
                 else:
                     result = -1
 
@@ -65,27 +65,24 @@ def listen(topic):
                 # tmp_json = {'message': 'no', 'result': result_msg}
                 # kafka_cloud_producer(fileJSON.json_encoding(result_msg))
             elif topic == kafkaEnum.TOPIC_RESERVE.value:
-                print('reserve topic refresh job schedule')
-                # from apscheduler.schedulers.background import BackgroundScheduler
-                # scheduler = BackgroundScheduler()
-                from MyHome.Schedule.MainScheduler import MainScheduler
+                from MyHome.schedule.main_scheduler import MainScheduler
                 main_scheduler = MainScheduler()
                 scheduler = main_scheduler.get_scheduler()
                 job.job_refresh(scheduler)
             elif topic == kafkaEnum.TOPIC_RESERVE_UPDATE.value:
-                json_object = jsonParser.json_parser_from_job(value)
+                json_object = mqtt_json_parser.json_parser_from_job(value)
                 reserve_pk = json_object['pk']
                 activation = json_object['activation']
                 set_reserve_result(pk=reserve_pk, activation=activation)
 
 
-def run(topic):
+def run(topic) -> None:
     task = threading.Thread(target=listen, args=[topic])
     task.setDaemon(True)
     task.start()
 
 
-def kafka_cloud_producer(msg):
+def kafka_cloud_producer(msg: str) -> None:
 
     producer = KafkaProducer(
         acks=1,
