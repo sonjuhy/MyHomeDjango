@@ -11,7 +11,7 @@ def db_update(mode: str, condition: str, column: str, data: list) -> None:
     if mode == 'control':
         room = RoomLight.objects.get(LIGHT_ROOM_PK=condition)
         if column == 'State':
-            room.STATE_CHAR = data
+            room.STATE_CHAR = data[0]
         elif column == 'Connect':
             room.STATE_CHAR = data[0]  # message
             room.CONNECT_CHAR = data[1]  # status
