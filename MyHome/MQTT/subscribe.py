@@ -1,25 +1,40 @@
 import traceback
-
-import paho.mqtt.client as mqtt
-from . import mqtt_json_parser
-from . import publisher
-
-from .mqtt_enum import MQTTEnum as mqttEnum
 import time
 
-from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
-from ..db.database_enum import Default as dbDefaultEnum
+import paho.mqtt.client as mqtt
 import MyHome.db.iot_database_connection as db_conn
+
+from MyHome.MQTT import mqtt_json_parser
+from MyHome.MQTT import publisher
+
+from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
+
+from MyHome.db.database_enum import Default as dbDefaultEnum
+from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
+from MyHome.MQTT.mqtt_enum import RoomEnum as roomEnum
+from MyHome.MQTT.mqtt_enum import RoomStatusEnum as roomStatusEnum
 
 
 class Subscribe:
 
     def __init__(self):
-        self.Room = {'balcony main': 'Off', 'balcony sub': 'Off', 'bathRoom1': 'Off', 'bathRoom2': 'Off',
-                     'big Room1': 'Off', 'big Room2': 'Off', 'kitchen sink': 'Off'
-            , 'kitchen table': 'Off', 'living Room sub': 'Off', 'living Room1': 'Off',
-                     'living Room2': 'Off', 'living Room3': 'Off', 'middle Room1': 'Off'
-            , 'middle Room2': 'Off', 'small Room': 'Off'}
+        self.Room = {
+            roomEnum.BALCONY_MAIN.value: roomStatusEnum.OFF.value,
+            roomEnum.BALCONY_SUB.value: roomStatusEnum.OFF.value,
+            roomEnum.BATH_ROOM_MAIN.value: roomStatusEnum.OFF.value,
+            roomEnum.BATH_ROOM_SUB.value: roomStatusEnum.OFF.value,
+            roomEnum.BIG_ROOM_TOP.value: roomStatusEnum.OFF.value,
+            roomEnum.BIG_ROOM_BOTTOM.value: roomStatusEnum.OFF.value,
+            roomEnum.KITCHEN_SINK.value: roomStatusEnum.OFF.value,
+            roomEnum.KITCHEN_TABLE.value: roomStatusEnum.OFF.value,
+            roomEnum.LIVING_ROOM_SUB.value: roomStatusEnum.OFF.value,
+            roomEnum.LIVING_ROOM_TOP.value: roomStatusEnum.OFF.value,
+            roomEnum.LIVING_ROOM_MIDDLE.value: roomStatusEnum.OFF.value,
+            roomEnum.LIVING_ROOM_BOTTOM.value: roomStatusEnum.OFF.value,
+            roomEnum.MIDDLE_ROOM_TOP.value: roomStatusEnum.OFF.value,
+            roomEnum.MIDDLE_ROOM_BOTTOM.value: roomStatusEnum.OFF.value,
+            roomEnum.SMALL_ROOM.value: roomStatusEnum.OFF.value
+        }
 
         self.topic_to_server = mqttEnum.TOPIC_PUB_SERVER.value
         self.topic_from_switch = mqttEnum.TOPIC_SUB_SWITCH.value
@@ -29,6 +44,9 @@ class Subscribe:
         self.database_conn = db_conn
 
     def connection(self, topic: str) -> None:
+        print('connection : topic - {topic}, self to_server : {to_server}, from_switch - {from_switch}'
+              .format(topic=topic, to_server=self.topic_to_server, from_switch=self.topic_from_switch))
+        print("MyHome/Light/Pub/Server" == mqttEnum.TOPIC_PUB_SERVER.value)
         if topic == 'server':
             self.selected_topic = self.topic_to_server
         else:
@@ -41,9 +59,11 @@ class Subscribe:
         self.client.loop_start()
 
     def on_connect(self, client, user_data, flags, rc) -> None:
+        print(f'on_connect topic : ${self.selected_topic}')
         self.client.subscribe(self.selected_topic)
 
-    def on_message(self, client, user_data, msg) -> None:
+    async def on_message(self, client, user_data, msg) -> None:
+        print('on message : msg - {msg}'.format(msg=msg.payload.decode('utf-8')))
         try:
             if self.selected_topic == self.topic_to_server:  # payload from not switch
                 payload = msg.payload.decode('utf-8')
@@ -66,7 +86,7 @@ class Subscribe:
 
                 if msg_diction['sender'] == 'Server':  # switch connection checking
                     if msg_diction['room'] in self.Room:
-                        db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': 'On'}
+                        db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': roomStatusEnum.ON.value}
                         self.database_conn.main(mode=dbDefaultEnum.UPDATE_CONN_STATUS.value, data=db_diction)
                 else:  # send msg to android
                     self.database_conn.main(mode=dbDefaultEnum.SAVE_LIGHT_RECORD.value, data=msg_diction)
