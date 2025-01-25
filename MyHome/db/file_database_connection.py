@@ -1,9 +1,11 @@
 import uuid
 
 from django.db.models.functions import Length
-from .database_enum import File as modeEnum
-from .database_enum import FileDataType as dataType
+from MyHome.db.database_enum import File as modeEnum
+from MyHome.db.database_enum import FileDataType as dataType
 from MyHome.models import FilePrivate, FilePublic, FilePublicTrashTb, FilePrivateTrashTb, FileDefaultPathTb
+
+# from channels.db import database_sync_to_async # need to change
 
 
 class DBConnection:

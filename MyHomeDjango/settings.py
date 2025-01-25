@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['localhost']
 INSTALLED_APPS = [
     'MyHome',
     'django_apscheduler',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -65,7 +66,7 @@ ROOT_URLCONF = 'MyHomeDjango.urls'
 # ]
 
 WSGI_APPLICATION = 'MyHomeDjango.wsgi.application'
-
+ASGI_APPLICATION = 'MyHomeDjango.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
