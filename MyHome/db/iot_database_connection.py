@@ -9,7 +9,6 @@ from channels.db import database_sync_to_async
 
 @database_sync_to_async
 def db_insert(time: str, room: str, do: str, day: str, user: str) -> None:
-    close_old_connections()
     LightRecord.objects.create(TIME_CHAR=time, ROOM_CHAR=room, USER_CHAR=user, DO_CHAR=do, DAY_CHAR=day)
 
 
@@ -41,6 +40,7 @@ def db_select(table: str) -> any:
 
 
 def main(mode: str, data: dict):
+    close_old_connections()
     if mode == modeEnum.UPDATE_LIGHT.value:
         if data['message'] == 'On' or data['message'] == 'Off':
             db_update(mode='control', condition=data['room'], column='State', data=[data['message']])
