@@ -3,6 +3,7 @@ from datetime import datetime
 
 from MyHome.db.database_enum import Default as modeEnum
 
+from django.db import close_old_connections
 from channels.db import database_sync_to_async
 
 
@@ -39,6 +40,7 @@ def db_select(table: str) -> any:
 
 
 def main(mode: str, data: dict):
+    close_old_connections()
     if mode == modeEnum.UPDATE_LIGHT.value:
         if data['message'] == 'On' or data['message'] == 'Off':
             db_update(mode='control', condition=data['room'], column='State', data=[data['message']])

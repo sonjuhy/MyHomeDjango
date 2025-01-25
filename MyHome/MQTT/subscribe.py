@@ -89,8 +89,13 @@ class Subscribe:
                         db_diction = {'message': msg_diction['message'], 'room': msg_diction['room'], 'status': roomStatusEnum.ON.value}
                         self.database_conn.main(mode=dbDefaultEnum.UPDATE_CONN_STATUS.value, data=db_diction)
                 else:  # send msg to android
-                    self.database_conn.main(mode=dbDefaultEnum.SAVE_LIGHT_RECORD.value, data=msg_diction)
-                    self.database_conn.main(mode=dbDefaultEnum.UPDATE_LIGHT.value, data=msg_diction)
+                    try:
+                        self.database_conn.main(mode=dbDefaultEnum.SAVE_LIGHT_RECORD.value, data=msg_diction)
+                        self.database_conn.main(mode=dbDefaultEnum.UPDATE_LIGHT.value, data=msg_diction)
+                    except Exception as e:
+                        kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=traceback.format_exc(),
+                                                                                     msg=msg.payload.decode('utf-8'))
+                        producer.send(topic=kafka_topic['iot'], value=get_kafka_data(False, 'iot', kafka_msg))
 
                     msg_to_android = mqtt_json_parser.json_encode_to_android(msg_diction)
                     publisher.pub(topic=mqttEnum.TOPIC_PUB_RESULT.value, msg=msg_to_android)
