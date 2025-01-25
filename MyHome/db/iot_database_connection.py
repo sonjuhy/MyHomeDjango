@@ -3,11 +3,13 @@ from datetime import datetime
 
 from MyHome.db.database_enum import Default as modeEnum
 
+from django.db import close_old_connections
 from channels.db import database_sync_to_async
 
 
 @database_sync_to_async
 def db_insert(time: str, room: str, do: str, day: str, user: str) -> None:
+    close_old_connections()
     LightRecord.objects.create(TIME_CHAR=time, ROOM_CHAR=room, USER_CHAR=user, DO_CHAR=do, DAY_CHAR=day)
 
 

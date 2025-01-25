@@ -9,6 +9,8 @@ from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
 from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
 from MyHome.kafka.kafka_enum import KafkaEnum as kafkaEnum
 
+from MyHome.db.light_database import get_all_reserve_list, get_light_by_name
+
 day_to_num = {
     '월': 0,
     '화': 1,
@@ -88,7 +90,6 @@ def job_clear(sche) -> None:
 
 
 def get_reserves() -> list:
-    from MyHome.db.light_database import get_all_reserve_list, get_light_by_name
     reserve_list = get_all_reserve_list()  # get all reserve data
 
     reserve_job_list = []
