@@ -62,7 +62,7 @@ class Subscribe:
         print(f'on_connect topic : ${self.selected_topic}')
         self.client.subscribe(self.selected_topic)
 
-    async def on_message(self, client, user_data, msg) -> None:
+    def on_message(self, client, user_data, msg) -> None:
         print('on message : msg - {msg}'.format(msg=msg.payload.decode('utf-8')))
         try:
             if self.selected_topic == self.topic_to_server:  # payload from not switch
