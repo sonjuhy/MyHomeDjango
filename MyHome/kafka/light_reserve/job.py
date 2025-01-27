@@ -3,13 +3,14 @@ import traceback
 import json
 
 from apscheduler.triggers.cron import CronTrigger
+from asgiref.sync import async_to_sync
 
 from MyHome.MQTT.publisher import pub
 from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
 from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
 from MyHome.kafka.kafka_enum import KafkaEnum as kafkaEnum
 
-from MyHome.db.light_database import get_all_reserve_list, get_light_by_name
+from MyHome.db.light_database import get_all_reserve_list, get_light_by_name, get_all_reserve_list_sync, get_light_by_name_sync
 
 day_to_num = {
     '월': 0,
@@ -90,8 +91,8 @@ def job_clear(sche) -> None:
 
 
 def get_reserves() -> list:
-    reserve_list = get_all_reserve_list()  # get all reserve data
-
+    # reserve_list = async_to_sync(get_all_reserve_list())  # get all reserve data
+    reserve_list = get_all_reserve_list_sync()
     reserve_job_list = []
 
     from pytimekr import pytimekr
@@ -105,7 +106,9 @@ def get_reserves() -> list:
             today_holiday = True
             break
 
+    # print(f'reserve list : {reserve_list}')
     for reserve in reserve_list:
+        print(f'reserve : {reserve}')
         reserve_id = reserve.LIGHT_RESERVE_PK
         reserve_room = reserve.ROOM_CHAR  # room name
         reserve_time = reserve.TIME_CHAR  # time. type : 12:01
@@ -141,7 +144,8 @@ def get_reserves() -> list:
             if running_today:
                 continue
 
-        room = get_light_by_name(reserve_room)
+        # room = get_light_by_name(reserve_room)
+        room = get_light_by_name_sync(reserve_room)
         msg = set_msg(reserve.DO_CHAR, reserve_room, room.CATEGORY_CHAR)
 
         reserve_hour = reserve_time.split(':')[0]

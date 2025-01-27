@@ -7,12 +7,12 @@ from django.db import close_old_connections
 from channels.db import database_sync_to_async
 
 
-@database_sync_to_async
+# @database_sync_to_async
 def db_insert(time: str, room: str, do: str, day: str, user: str) -> None:
     LightRecord.objects.create(TIME_CHAR=time, ROOM_CHAR=room, USER_CHAR=user, DO_CHAR=do, DAY_CHAR=day)
 
 
-@database_sync_to_async
+# @database_sync_to_async
 def db_update(mode: str, condition: str, column: str, data: list) -> None:
     if mode == 'control':
         room = RoomLight.objects.get(LIGHT_ROOM_PK=condition)
@@ -31,7 +31,7 @@ def db_update(mode: str, condition: str, column: str, data: list) -> None:
         reserve.save()
 
 
-@database_sync_to_async
+# @database_sync_to_async
 def db_select(table: str) -> any:
     if table == 'Reserve':
         return Reserve.objects.all()
