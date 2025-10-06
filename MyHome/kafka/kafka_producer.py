@@ -16,11 +16,20 @@ kafka_data = {
     'service': 'service_name',
     'content': 'msg_content'
 }
+iot_to_spring_kafka_data = {
+    'room': 'room_name',
+    'state': True,
+    'kor': '방이름',
+    'category': 'room_category',
+    'connect': True
+
+}
 
 kafka_topic = {
     'cloud': kafkaEnum.TOPIC_LOG_CLOUD.value,
     'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK.value,
     'iot': kafkaEnum.TOPIC_LOG_IOT.value,
+    'iot_spring': kafkaEnum.TOPIC_IOT.value,
     'reserve': kafkaEnum.TOPIC_LOG_RESERVE.value,
     'weather': kafkaEnum.TOPIC_LOG_WEATHER.value
 }
