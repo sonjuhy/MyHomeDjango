@@ -31,4 +31,4 @@ ENV SECRET_KEY=$SECRET_KEY
 EXPOSE 8000
 
 # Specify the command to run when the container starts
-CMD [ "python", "./manage.py", "runserver", "0.0.0.0:8000", "--noreload" ]
+CMD [ "python", "-u", "./manage.py", "runserver", "0.0.0.0:8000", "--noreload" ]
