@@ -80,15 +80,7 @@ class Subscribe:
                     kafka_msg = ('[on_message] selected == server topic : {topic}, msg : {msg}, time : {time}'
                                  .format(topic=self.selected_topic, msg=msg_to_switch, time=time.strftime('%Y-%m-%d %H:%M:%S')))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(result=True, service='iot', content=kafka_msg))
-                    kafka_iot_spring_msg: iot_to_spring_kafka_data = {
-                        'room': dic_from_payload['destination'],
-                        'state': dic_from_payload['message'],
-                        'kor': '',
-                        'category': dic_from_payload['room'],
-                        'connect': self.Room[dic_from_payload['destination']]
-                    }
-                    producer.send(topic=kafka_topic['iot_spring'],
-                                  value=kafka_iot_spring_msg)
+
             else:  # msg from switch or server
                 payload = msg.payload.decode('utf-8')
                 msg_diction = mqtt_json_parser.json_parser_from_switch(msg=payload)
@@ -112,13 +104,13 @@ class Subscribe:
                     kafka_msg = '[on_message] from switch, to android topic : {topic}, msg : {msg}, time : {time}'.format(
                         topic=self.selected_topic, msg=msg_to_android, time=time.strftime('%Y-%m-%d %H:%M:%S'))
                     producer.send(topic=kafka_topic['iot'], value=get_kafka_data(True, 'iot', kafka_msg))
+
                     kafka_iot_spring_msg: iot_to_spring_kafka_data = {
+                        'sender': msg_diction['sender'],
                         'room': msg_diction['room'],
-                        'state': msg_diction['message'],
-                        'kor': '',
-                        'category': '',
-                        'connect': self.Room[msg_diction['room']]
+                        'state': msg_diction['message']
                     }
+                    print(f'kafka iot spring msg : {kafka_iot_spring_msg}')
                     producer.send(topic=kafka_topic['iot_spring'],
                                   value=kafka_iot_spring_msg)
         except Exception as e:

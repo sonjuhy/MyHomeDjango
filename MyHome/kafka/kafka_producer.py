@@ -17,11 +17,9 @@ kafka_data = {
     'content': 'msg_content'
 }
 iot_to_spring_kafka_data = {
+    'sender': 'sender',
     'room': 'room_name',
-    'state': True,
-    'kor': '방이름',
-    'category': 'room_category',
-    'connect': True
+    'state': True
 
 }
 
