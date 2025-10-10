@@ -3,6 +3,7 @@ from enum import Enum
 
 class KafkaEnum(Enum):
     TOPIC_IOT = "iot-topic"
+    TOPIC_SPRING_IOT = 'iot-spring-topic'
     TOPIC_CLOUD = "cloud-topic"
     TOPIC_RESERVE = "reserve-topic"
     TOPIC_RESERVE_UPDATE = "reserve-update"

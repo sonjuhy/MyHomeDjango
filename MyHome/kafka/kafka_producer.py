@@ -27,7 +27,7 @@ kafka_topic = {
     'cloud': kafkaEnum.TOPIC_LOG_CLOUD.value,
     'cloud_check': kafkaEnum.TOPIC_LOG_CLOUD_CHECK.value,
     'iot': kafkaEnum.TOPIC_LOG_IOT.value,
-    'iot_spring': kafkaEnum.TOPIC_IOT.value,
+    'iot_spring': kafkaEnum.TOPIC_SPRING_IOT.value,
     'reserve': kafkaEnum.TOPIC_LOG_RESERVE.value,
     'weather': kafkaEnum.TOPIC_LOG_WEATHER.value
 }

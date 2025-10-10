@@ -39,6 +39,7 @@ def listen(topic) -> None:
             value = message.value.decode('utf-8')
             if topic == kafkaEnum.TOPIC_IOT.value:
                 if json.loads(value):
+                    print(f'value : {value}')
                     parsing_data = mqtt_json_parser.json_parser_from_else(msg=value)
                     publisher.pub(mqttEnum.TOPIC_PUB_DEFAULT.value + parsing_data['room'], value)
                     print('parsing_data on kafka: %s' % value)
