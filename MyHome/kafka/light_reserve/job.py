@@ -1,3 +1,4 @@
+from typing import Any, List, Dict
 import time
 import traceback
 import json
@@ -23,7 +24,7 @@ day_to_num = {
 }
 
 
-def job_refresh(scheduler) -> None:
+def job_refresh(scheduler: Any) -> None:
     try:
         if len(scheduler.get_jobs()) > 0:
             job_clear(scheduler)
@@ -57,7 +58,7 @@ def job_refresh(scheduler) -> None:
         print(kafka_msg)
 
 
-def job_running(msg, reserve) -> None:
+def job_running(msg: str, reserve: Any) -> None:
     try:
         topic = mqttEnum.TOPIC_PUB_SERVER.value
         pub(topic=topic, msg=msg)
@@ -83,14 +84,14 @@ def job_running(msg, reserve) -> None:
         print(kafka_msg)
 
 
-def job_clear(sche) -> None:
+def job_clear(sche: Any) -> None:
     for tmp_job in sche.get_jobs():
         if tmp_job.id != 'iot_reserve_check':
             sche.remove_job(tmp_job.id)
     # sche.remove_all_jobs()
 
 
-def get_reserves() -> list:
+def get_reserves() -> List[Dict[str, Any]]:
     # reserve_list = async_to_sync(get_all_reserve_list())  # get all reserve data
     reserve_list = get_all_reserve_list_sync()
     reserve_job_list = []
@@ -162,7 +163,7 @@ def get_reserves() -> list:
     return reserve_job_list
 
 
-def set_msg(message, destination, room) -> str:
+def set_msg(message: str, destination: str, room: str) -> str:
     # if change all refresh -> refresh some data, get data from kafka and make msg & return msg
     # msg sample : {"Light":{"sender":"Server","message":"OFF","destination":"living Room1","room":"living Room"}}
     tmp_dic = {'sender': 'ServerReserveDjango', 'message': message, 'destination': destination, 'room': room}

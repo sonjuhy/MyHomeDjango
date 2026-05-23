@@ -27,7 +27,7 @@ def get_default_public_path() -> list:
     return default_paths
 
 
-def get_default_private_path() -> list:
+def get_default_private_path() -> List[str]:
     """
         return default path of private cloud
 
@@ -185,4 +185,5 @@ def file_delete(uuid: str, file: str) -> int:
         print('file_delete error : {}'.format(e))
         kafka_msg = '[file_delete] msg : {}'.format(e)
         producer.send(topic=kafka_topic['cloud'], value=get_kafka_data(False, 'cloud', kafka_msg))
+        return -2
         return -2

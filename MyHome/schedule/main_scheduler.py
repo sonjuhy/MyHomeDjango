@@ -13,5 +13,5 @@ class MainScheduler:
             cls._instance = super(MainScheduler, cls).__new__(cls)
         return cls._instance
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> BackgroundScheduler:
         return self.scheduler

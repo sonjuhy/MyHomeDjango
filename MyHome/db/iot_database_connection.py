@@ -1,10 +1,11 @@
 from MyHome.models import RoomLight, Reserve, LightRecord
 from datetime import datetime
+from typing import Any, List, Union, Optional
 
 from MyHome.db.database_enum import Default as modeEnum
 
 from django.db import close_old_connections
-from channels.db import database_sync_to_async
+from django.db.models.query import QuerySet
 
 
 # @database_sync_to_async
@@ -13,7 +14,7 @@ def db_insert(time: str, room: str, do: str, day: str, user: str) -> None:
 
 
 # @database_sync_to_async
-def db_update(mode: str, condition: str, column: str, data: list) -> None:
+def db_update(mode: str, condition: Union[str, int], column: str, data: List[str]) -> None:
     if mode == 'control':
         room = RoomLight.objects.get(LIGHT_ROOM_PK=condition)
         if column == 'State':
@@ -25,28 +26,29 @@ def db_update(mode: str, condition: str, column: str, data: list) -> None:
     elif mode == 'reserve':
         reserve = Reserve.objects.get(LIGHT_RESERVE_PK=condition)
         if column == 'Do':
-            reserve.DO_CHAR = data
+            reserve.DO_CHAR = data[0]
         elif column == 'Activated':
-            reserve.ACTIVATED_CHAR = data
+            reserve.ACTIVATED_CHAR = data[0]
         reserve.save()
 
 
 # @database_sync_to_async
-def db_select(table: str) -> any:
+def db_select(table: str) -> QuerySet:
     if table == 'Reserve':
         return Reserve.objects.all()
     elif table == 'Room':
         return RoomLight.objects.all()
+    return RoomLight.objects.none()
 
 
-def main(mode: str, data: dict):
+def main(mode: str, data: Any) -> Optional[QuerySet]:
     close_old_connections()
     if mode == modeEnum.UPDATE_LIGHT.value:
         if data['message'] == 'On' or data['message'] == 'Off':
             db_update(mode='control', condition=data['room'], column='State', data=[data['message']])
     elif mode == modeEnum.UPDATE_CONN_STATUS.value:
         data_list = [data['message'], data['status']]
-        db_update(mode='control', condition=data['room'], column='Connect', data=data_list)  # need to compare data content
+        db_update(mode='control', condition=data['room'], column='Connect', data=data_list)
     elif mode == modeEnum.GET_LIGHT_LIST.value:
         return db_select(table='Room')
     elif mode == modeEnum.SAVE_LIGHT_RECORD.value:
@@ -60,3 +62,4 @@ def main(mode: str, data: dict):
         db_update(mode='reserve', condition=data[0][1], column='Do', data=[data[1][1]])
     elif mode == modeEnum.UPDATE_RESERVE_ACTIVATE.value:
         db_update(mode='reserve', condition=data[0][1], column='Activated', data=[data[1][1]])
+    return None

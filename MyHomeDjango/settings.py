@@ -79,6 +79,15 @@ ASGI_APPLICATION = 'MyHomeDjango.asgi.application'
 DATABASES = my_settings.DATABASES
 SECRET_KEY = my_settings.SECRET_KEY
 
+import sys
+if 'pytest' in sys.modules:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'db.sqlite3'),
+        }
+    }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -126,3 +135,4 @@ STATIC_URL = '/static/'
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
 APSCHEDULER_RUN_NOW_TIMEOUT = 60
 SCHEDULER_DEFAULT = True
+_DEFAULT = True

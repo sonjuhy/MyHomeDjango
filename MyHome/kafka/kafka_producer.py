@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from json import dumps
 from kafka import KafkaProducer
 from .kafka_enum import KafkaEnum as kafkaEnum
@@ -33,7 +34,7 @@ kafka_topic = {
 }
 
 
-def get_kafka_data(result, service, content) -> dict:
+def get_kafka_data(result: bool, service: str, content: str) -> Dict[str, Any]:
     kafka_data['type'] = result
     kafka_data['service'] = service
     kafka_data['content'] = content

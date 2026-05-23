@@ -1,3 +1,4 @@
+from typing import Any
 import paho.mqtt.client as mqtt
 
 import time
@@ -5,7 +6,7 @@ from .mqtt_enum import MQTTEnum as mqttEnum
 from MyHome.kafka.kafka_producer import producer, get_kafka_data, kafka_topic
 
 
-def pub(topic: str, msg: any) -> None:
+def pub(topic: str, msg: Any) -> None:
     print('On Publisher topic : {topic}, msg : {msg}'.format(topic=topic, msg=msg))
     client = mqtt.Client('Django-mqtt')
     client.connect(host=mqttEnum.SERVER_IP.value, port=mqttEnum.SERVER_PORT.value, keepalive=60)
