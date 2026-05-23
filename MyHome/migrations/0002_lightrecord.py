@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
             name='LightRecord',
             fields=[
                 ('LIGHT_RECORD_ID', models.IntegerField(primary_key=True, serialize=False)),
-                ('DAY_CHAR', models.CharField(max_length=32)),
-                ('TIME_CHAR', models.CharField(max_length=32)),
-                ('ROOM_CHAR', models.CharField(max_length=64)),
-                ('DO_CHAR', models.CharField(max_length=16)),
-                ('USER_CHAR', models.CharField(max_length=128)),
+                ('day', models.CharField(max_length=32)),
+                ('time', models.CharField(max_length=32)),
+                ('room', models.CharField(max_length=64)),
+                ('action', models.CharField(max_length=16)),
+                ('user', models.CharField(max_length=128)),
             ],
             options={
                 'db_table': 'LIGHT_RECORD_TB',

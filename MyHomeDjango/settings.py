@@ -32,8 +32,13 @@ ALLOWED_HOSTS = ['localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'core',
+    'iot_messaging',
+    'task_scheduler',
+    'file_manager',
     'MyHome',
     'django_apscheduler',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -65,7 +70,7 @@ ROOT_URLCONF = 'MyHomeDjango.urls'
 # ]
 
 WSGI_APPLICATION = 'MyHomeDjango.wsgi.application'
-
+ASGI_APPLICATION = 'MyHomeDjango.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -77,6 +82,15 @@ WSGI_APPLICATION = 'MyHomeDjango.wsgi.application'
 
 DATABASES = my_settings.DATABASES
 SECRET_KEY = my_settings.SECRET_KEY
+
+import sys
+if 'pytest' in sys.modules:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'db.sqlite3'),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -116,6 +130,50 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': str(BASE_DIR / 'logs' / 'django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'MyHome': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+# Ensure logs directory exists
+import os
+os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -125,3 +183,4 @@ STATIC_URL = '/static/'
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
 APSCHEDULER_RUN_NOW_TIMEOUT = 60
 SCHEDULER_DEFAULT = True
+_DEFAULT = True
