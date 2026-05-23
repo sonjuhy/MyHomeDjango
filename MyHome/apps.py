@@ -7,7 +7,7 @@ from django.conf import settings
 class MyhomeConfig(AppConfig):
     name = 'MyHome'
 
-    def ready(self):
+    def ready(self) -> None:
         super().ready()
         if os.environ.get('RUN_main', None) != 'true':
             from .MQTT import subscribe

@@ -17,7 +17,7 @@ from MyHome.MQTT.mqtt_enum import MQTTEnum as mqttEnum
 from .kafka_enum import KafkaEnum as kafkaEnum
 
 
-def listen(topic) -> None:
+def listen(topic: str) -> None:
     print('Starting listening {topic}, server ip : {ip}'.format(topic=topic, ip=kafkaEnum.SERVER_IP.value))
     consumer = KafkaConsumer(
         topic,
@@ -77,9 +77,9 @@ def listen(topic) -> None:
                 set_reserve_result(pk=reserve_pk, activation=activation)
 
 
-def run(topic) -> None:
+def run(topic: str) -> None:
     task = threading.Thread(target=listen, args=[topic])
-    task.setDaemon(True)
+    task.daemon = True
     task.start()
 
 

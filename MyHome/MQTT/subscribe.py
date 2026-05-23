@@ -15,9 +15,11 @@ from MyHome.MQTT.mqtt_enum import RoomEnum as roomEnum
 from MyHome.MQTT.mqtt_enum import RoomStatusEnum as roomStatusEnum
 
 
+from typing import Any
+
 class Subscribe:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.Room = {
             roomEnum.BALCONY_MAIN.value: roomStatusEnum.OFF.value,
             roomEnum.BALCONY_SUB.value: roomStatusEnum.OFF.value,
@@ -62,9 +64,9 @@ class Subscribe:
         print(f'on_connect topic : ${self.selected_topic}')
         self.client.subscribe(self.selected_topic)
 
-    def on_message(self, client, user_data, msg) -> None:
-        print('on message : msg - {msg}'.format(msg=msg.payload.decode('utf-8')))
+    def on_message(self, client: Any, user_data: Any, msg: Any) -> None:
         try:
+            print('on message : msg - {msg}'.format(msg=msg.payload.decode('utf-8')))
             if self.selected_topic == self.topic_to_server:  # payload from not switch
                 payload = msg.payload.decode('utf-8')
                 if payload == 'reserve':
@@ -114,5 +116,6 @@ class Subscribe:
                     producer.send(topic=kafka_topic['iot_spring'],
                                   value=kafka_iot_spring_msg)
         except Exception as e:
-            kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=traceback.format_exc(), msg=msg.payload.decode('utf-8'))
+            kafka_msg = '[on_message] error : {error}, msg={msg}'.format(error=traceback.format_exc(), msg=str(msg.payload))
             producer.send(topic=kafka_topic['iot'], value=get_kafka_data(False, 'iot', kafka_msg))
+

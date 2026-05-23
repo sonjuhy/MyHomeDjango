@@ -1,7 +1,7 @@
 from MyHome.kafka.light_reserve import job
 
 
-def scheduler_start():
+def scheduler_start() -> None:
     from .main_scheduler import MainScheduler
     main_scheduler = MainScheduler()
     scheduler = main_scheduler.get_scheduler()
