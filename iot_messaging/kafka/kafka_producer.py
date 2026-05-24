@@ -6,7 +6,7 @@ from iot_messaging.kafka.kafka_enum import KafkaEnum as kafkaEnum
 producer = KafkaProducer(
     acks=1,
     compression_type='gzip',
-    bootstrap_servers=["192.168.0.254:9092"],
+    bootstrap_servers=[kafkaEnum.SERVER_IP.value],
     value_serializer=lambda x: dumps(x).encode('utf-8')
 )
 

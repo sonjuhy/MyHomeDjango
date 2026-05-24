@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -12,4 +13,4 @@ class KafkaEnum(Enum):
     TOPIC_LOG_CLOUD_CHECK = "cloud-check-log"
     TOPIC_LOG_RESERVE = "reserve-log-topic"
     TOPIC_LOG_WEATHER = "weather-log-topic"
-    SERVER_IP = "192.168.0.254:9092"
+    SERVER_IP = os.getenv("KAFKA_SERVER_IP", "192.168.0.254:9092")

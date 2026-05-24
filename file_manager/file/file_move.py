@@ -29,7 +29,7 @@ def get_default_public_path() -> list:
     return default_paths
 
 
-def get_default_private_path() -> List[str]:
+def get_default_private_path() -> list[str]:
     """
         return default path of private cloud
 

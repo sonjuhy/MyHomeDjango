@@ -1,9 +1,10 @@
+import os
 from enum import Enum
 
 
 class MQTTEnum(Enum):
-    SERVER_IP: str = "192.168.0.254"
-    SERVER_PORT: int = 1883
+    SERVER_IP: str = os.getenv("MQTT_SERVER_IP", "192.168.0.254")
+    SERVER_PORT: int = int(os.getenv("MQTT_SERVER_PORT", 1883))
     TOPIC_PUB_DEFAULT: str = "MyHome/Light/Pub/"
     TOPIC_PUB_SERVER: str = "MyHome/Light/Pub/Server"
     TOPIC_PUB_RESULT: str = "MyHome/Light/Result"
