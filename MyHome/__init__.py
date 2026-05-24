@@ -1,5 +1,5 @@
-# from .MQTT import subscribe
-# from .kafka.Kafka_Consumer import KafkaConsumerDefault
+# from iot_messaging.MQTT import subscribe
+# from iot_messaging.kafka.Kafka_Consumer import KafkaConsumerDefault
 #
 # mqttAndroid = subscribe.Subscribe()
 # mqttAndroid.connection(topic='android')
